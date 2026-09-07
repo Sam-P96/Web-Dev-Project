@@ -2,6 +2,7 @@ import React from 'react'
 import Navbar from './Navbar'
 
 const LoginForm = () => {
+
 const handleSubmit=(e)=>{
 
     e.preventDefault()
@@ -15,49 +16,58 @@ const handleSubmit=(e)=>{
 
   return (
     <div>
-        <main className="login-page">
-  <div className="login-card">
-    <div className="login-heading">
-      <p className="section-label">WELCOME BACK</p>
-      <h1>Login to AutoTori</h1>
-      <p>Sign in to manage your cars and account.</p>
+        <main className="min-h-162.5 bg-[#f5f6f4] flex justify-center items-center px-5 py-15 max-[600px]:px-3.75 max-[600px]:py-10">
+  <div className=" w-full max-w-115 bg-white border border-[#e3e6e2] rounded-[14px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] max-[600px]:px-5.5 max-[600px]:py-7">
+    <div className="text-center mb-7.5">
+      <p className="text-[#2f9449] text-xs font-extrabold tracking-[1.5px]">WELCOME BACK</p>
+      <h1 className='text-[30px] font-bold mt-1.25 mb-2 max-[600px]:text-[26px]'>Login to AutoTori</h1>
+      <p className='text-[#777d78] text-sm'>Sign in to manage your cars and account.</p>
     </div>
     <form onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label htmlFor="email">Email Address</label>
+      <div className="mb-5">
+        <label htmlFor="email" className='block text-sm font-bold mb-1.75'>Email Address</label>
         <input
           type="email"
           id="email"
           name="email"
           placeholder="Enter your email"
           required=""
+          className="w-full h-12 px-3.75 border border-[#d8dcd8] rounded-[7px]
+                  outline-none text-sm bg-white
+                  focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)]"
         />
       </div>
-      <div className="form-group">
-        <label htmlFor="password">Password</label>
+      <div className="mb-5">
+        <label htmlFor="password" className='block text-sm font-bold mb-1.75'>Password</label>
         <input
           type="password"
           id="password"
           name="password"
           placeholder="Enter your password"
           required=""
+          className='w-full h-12 px-3.75 border border-[#d8dcd8] rounded-[7px]
+                  outline-none text-sm bg-white
+                  focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)]'
         />
       </div>
-      <div className="login-options">
-        <label className="remember-me">
+      <div className="flex justify-between items-center mt-1.25 mb-5.5 text-[13px]
+                max-[600px]:items-start max-[600px]:gap-3.75">
+        <label className="flex items-center gap-1.75 text-[#555b57]">
           <input type="checkbox" name="remember" />
           Remember me
         </label>
-        <a href="#">Forgot password?</a>
+        <a href="#" className='text-[#247f3d] font-semibold'>Forgot password?</a>
       </div>
-      <button type="submit" className="login-submit">
+      <button type="submit" className="w-full h-12 border-none rounded-[7px] bg-[#247f3d] text-white
+                text-[15px] font-bold cursor-pointer
+                hover:bg-[#1b6730]">
         Login
       </button>
     </form>
-    <div className="login-divider">OR</div>
-    <div className="create-account">
-      Don't have an account?
-      <a href="register.html">Create Account</a>
+    <div className="flex items-center gap-3.75 my-7 text-[#999f9a] text-[11px]"><span className="flex-1 h-px bg-[#e2e5e2]" />OR<span className="flex-1 h-px bg-[#e2e5e2]" /></div>
+    <div className="text-center text-[#707671] text-[13px]">
+      Don't have an account?{' '}
+      <a href="register.html" className='text-[#247f3d] font-bold'>Create Account</a>
     </div>
   </div>
 </main>

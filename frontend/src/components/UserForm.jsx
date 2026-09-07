@@ -21,10 +21,10 @@ export const UserForm = () => {
     }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8 "> <main className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-5 "> <main className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
     <form onSubmit={handleSubmit} className=''>
       {/* User INFORMATION */}
-      <div className="text-center mb-10 ">
+      <div className="text-center mb-5 ">
         <p className="text-sm font-semibold text-[#2f9449] p-5">USER INFORMATION</p>
         <h2 className='text-4xl font-bold'>Create Your Account</h2>
       </div>
@@ -52,6 +52,18 @@ export const UserForm = () => {
             placeholder="e.g. Doe"
             required=""
             className='w-full h-12 p-4 border border-[#d8dcd8] rounded-[7px] outline-none text-sm bg-white focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)] '
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label htmlFor="address" className='block text-sm font-bold mb-[7px]'>Address</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            placeholder="e.g. 123 Main St"
+            required=""
+            className={inputClasses}
           />
         </div>
 
@@ -89,16 +101,29 @@ export const UserForm = () => {
           />
         </div>
 
-        <div>
+        <div >
           <label htmlFor="seller-phone" className={labelClasses}>Phone</label>
           <input
-            type="tel"
+            type="Number"
             id="phone"
             name="phone"
             placeholder="+358..."
             className={inputClasses}
           />
+          </div>
+
+        <div>
+          <label htmlFor="date-of-birth" className={labelClasses}>Date of Birth</label>
+          <input
+            type="date"
+            id="date-of-birth"
+            name="date-of-birth"
+            className={inputClasses}
+          />
+
+
         </div>
+
       </div>
       {/* SUBMIT */}
       <div className="flex items-center justify-center p-4">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import './App.css'
+
 import "./index.css"
 import SubmitCar from './pages/SubmitCar.jsx'
 import Navbar from './components/Navbar.jsx'
@@ -18,7 +18,8 @@ function App() {
     {/* <Navbar/>
     <Header/> */}
     {/* <SubmitCar/> */}
-    <CreateAccount/>
+    {/* <CreateAccount/> */}
+    {/* <Login/> */}
 
     </>
   )
