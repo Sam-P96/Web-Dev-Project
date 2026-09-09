@@ -1,10 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { z } from 'zod';
+
+const CarSchema = z.object({
+  make: z.string().min(1, 'please select one'),
+  model: z.string().min(2, 'please enter the model'),
+  year: z.string().min(1, 'please select the model'),
+  mileage: z.coerce.number().max(70, 'you gotta be kidding me'),
+  fuel: z.string().min(1, 'please select one'),
+  transmission: z.string().min(1, 'please select one'),
+  price: z.coerce.number().min(1000, "don't hesitate, we will do the rest"),
+  condition: z.string().min(1, 'please select one'),
+  carImage: z
+    .custom((file) => file instanceof File && file.size > 0, {
+      message: 'please select an image',
+    })
+    .refine((file) => file?.size <= 5 * 1024 * 1024, {
+      message: 'image size must be under 5MB',
+    }),
+});
 
 export const CarForm = () => {
+  const [errors, setErrors] = useState('');
+
+  const handleChange = (e) => {
+    const fieldName = e.target.name;
+    const fieldValue = e.target.value;
+    const fieldSchema = CarSchema.shape[fieldName];
+    const validate = fieldSchema.safeParse(fieldValue);
+    if (!validate.success) {
+      const errorsMessage = validate.error.issues[0].message;
+      setErrors((prev) => ({ ...prev, [fieldName]: errorsMessage }));
+    } else {
+      setErrors((prev) => ({ ...prev, [fieldName]: '' }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const values = Object.fromEntries(formData.entries());
+    console.log(values);
+    const validate = CarSchema.safeParse(values);
+    if (!validate.success) {
+      const errors = z.flattenError(validate.error).fieldErrors;
+      setErrors(errors);
+      return;
+    }
+    setErrors({});
     console.log(values);
   };
 
@@ -27,14 +69,18 @@ export const CarForm = () => {
 
           <div className="mb-5 grid grid-cols-2 gap-5 max-[700px]:grid-cols-1 max-[700px]:gap-0">
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="make" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="make"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Make
               </label>
               <select
                 id="make"
                 name="make"
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                onChange={handleChange}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.make ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               >
                 <option value="">Select Make</option>
                 <option>Audi</option>
@@ -44,31 +90,45 @@ export const CarForm = () => {
                 <option>Toyota</option>
                 <option>Tesla</option>
               </select>
+              {errors.make && (
+                <p className="mt-1 text-xs text-red-500">{errors.make}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="model" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="model"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Model
               </label>
               <input
                 type="text"
                 id="model"
                 name="model"
+                onChange={handleChange}
                 placeholder="e.g. A4"
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.model ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               />
+              {errors.model && (
+                <p className="mt-1 text-xs text-red-500">{errors.model}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="year" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="year"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Year
               </label>
               <select
                 id="year"
                 name="year"
+                onChange={handleChange}
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.year ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               >
                 <option value="">Select Year</option>
                 <option>2026</option>
@@ -84,10 +144,16 @@ export const CarForm = () => {
                 <option>2016</option>
                 <option>2015</option>
               </select>
+              {errors.year && (
+                <p className="mt-1 text-xs text-red-500">{errors.year}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="mileage" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="mileage"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Mileage (km)
               </label>
               <input
@@ -95,20 +161,28 @@ export const CarForm = () => {
                 id="mileage"
                 name="mileage"
                 placeholder="e.g. 45000"
+                onChange={handleChange}
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.mileage ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               />
+              {errors.mileage && (
+                <p className="mt-1 text-xs text-red-500">{errors.mileage}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="fuel" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="fuel"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Fuel Type
               </label>
               <select
                 id="fuel"
                 name="fuel"
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                onChange={handleChange}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.fuel ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               >
                 <option value="">Select Fuel Type</option>
                 <option>Petrol</option>
@@ -116,40 +190,62 @@ export const CarForm = () => {
                 <option>Hybrid</option>
                 <option>Electric</option>
               </select>
+              {errors.fuel && (
+                <p className="mt-1 text-xs text-red-500">{errors.fuel}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="transmission" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="transmission"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Transmission
               </label>
               <select
                 id="transmission"
                 name="transmission"
+                onChange={handleChange}
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.transmission ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               >
                 <option value="">Select Transmission</option>
                 <option>Automatic</option>
                 <option>Manual</option>
               </select>
+              {errors.transmission && (
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.transmission}
+                </p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="price" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="price"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Asking Price (€)
               </label>
               <input
                 type="number"
                 id="price"
+                onChange={handleChange}
                 name="price"
                 placeholder="e.g. 29990"
                 required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.price ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
               />
+              {errors.price && (
+                <p className="mt-1 text-xs text-red-500">{errors.price}</p>
+              )}
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="location" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="location"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Location
               </label>
               <input
@@ -165,25 +261,35 @@ export const CarForm = () => {
 
           {/* CONDITION */}
           <div className="mb-5">
-            <label htmlFor="condition" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+            <label
+              htmlFor="condition"
+              className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+            >
               Condition
             </label>
             <select
               id="condition"
               name="condition"
+              onChange={handleChange}
               required
-              className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.condition ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
             >
               <option value="">Select Condition</option>
               <option>Excellent</option>
               <option>Good</option>
               <option>Fair</option>
             </select>
+            {errors.condition && (
+              <p className="mt-1 text-xs text-red-500">{errors.condition}</p>
+            )}
           </div>
 
           {/* DESCRIPTION */}
           <div className="mb-5">
-            <label htmlFor="description" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+            <label
+              htmlFor="description"
+              className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+            >
               Description
             </label>
             <textarea
@@ -198,20 +304,28 @@ export const CarForm = () => {
 
           {/* IMAGE */}
           <div className="mb-5">
-            <label htmlFor="car-image" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+            <label
+              htmlFor="carImage"
+              className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+            >
               Car Image
             </label>
             <input
               type="file"
-              id="car-image"
-              name="car-image"
+              id="carImage"
+              name="carImage"
               accept="image/*"
-              className="h-auto w-full cursor-pointer rounded-[7px] border border-[#d8dcd8] bg-[#fafbfa] p-3 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
+              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.carImage ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
             />
-            <p className="mt-1.75 text-3 text-[#777d78]">Upload a clear photo of your car.</p>
+            {errors.carImage && (
+              <p className="mt-1 text-xs text-red-500">{errors.carImage}</p>
+            )}
+            <p className="mt-1.75 text-3 text-[#777d78]">
+              Upload a clear photo of your car.
+            </p>
           </div>
 
-          {/* SELLER INFORMATION */}
+          {/* SELLER INFORMATION
           <div className="mt-3.75 mb-7 border-t border-[#e8ebe8] pt-7.5">
             <p className="text-3 font-extrabold tracking-[1.5px] text-[#2f9449]">
               SELLER DETAILS
@@ -223,7 +337,10 @@ export const CarForm = () => {
 
           <div className="mb-5 grid grid-cols-2 gap-5 max-[700px]:grid-cols-1 max-[700px]:gap-0">
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="seller-name" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="seller-name"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Full Name
               </label>
               <input
@@ -237,7 +354,10 @@ export const CarForm = () => {
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="seller-email" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="seller-email"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Email
               </label>
               <input
@@ -251,7 +371,10 @@ export const CarForm = () => {
             </div>
 
             <div className="mb-0 max-[700px]:mb-5">
-              <label htmlFor="seller-phone" className="mb-1.75 block text-3.25 font-bold text-[#303631]">
+              <label
+                htmlFor="seller-phone"
+                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
+              >
                 Phone
               </label>
               <input
@@ -262,7 +385,7 @@ export const CarForm = () => {
                 className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* SUBMIT */}
           <div className="mt-2.5 flex justify-end border-t border-[#e8ebe8] pt-6.25 max-[700px]:justify-stretch">
