@@ -1,26 +1,52 @@
 import { useState } from 'react';
-
 import './index.css';
-import SubmitCar from './pages/SubmitCar.jsx';
-import Navbar from './components/Navbar.jsx';
-import Header from './components/Header.jsx';
-import Footer from './components/Footer.jsx';
-import Login from './pages/Login.jsx';
-import Calendar from './components/BookingAppointment.jsx';
-import CreateAccount from './pages/CreateAccount';
-import PriceEstimateDisplay from './components/PriceEstimateDisplay';
-import BookingAppointment from './components/BookingAppointment.jsx';
+
+// Aapke naye components
+import UserProfile from './pages/UserProfile.jsx';
+import WorkerOffers from './pages/WorkerOffers.jsx';
+import WorkerAppointments from './pages/WorkerAppointments.jsx';
 
 function App() {
+  const [activeTab, setActiveTab] = useState('offers');
+
   return (
     <>
-      {/* <Navbar/>
-    <Header/> */}
-      <SubmitCar />
-      {/* <CreateAccount /> */}
-      {/* <Login /> */}
-      {/* <PriceEstimateDisplay/> */}
-      {/* <BookingAppointment /> */}
+      {/* Testing Navigation Bar */}
+      <div className="bg-gray-800 text-white p-4 flex justify-center gap-4 shadow-md sticky top-0 z-50">
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`px-4 py-2 rounded-md font-semibold text-sm transition ${
+            activeTab === 'profile' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+          }`}
+        >
+          User Profile
+        </button>
+
+        <button
+          onClick={() => setActiveTab('offers')}
+          className={`px-4 py-2 rounded-md font-semibold text-sm transition ${
+            activeTab === 'offers' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+          }`}
+        >
+          Worker Offers
+        </button>
+
+        <button
+          onClick={() => setActiveTab('appointments')}
+          className={`px-4 py-2 rounded-md font-semibold text-sm transition ${
+            activeTab === 'appointments' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+          }`}
+        >
+          Worker Appointments
+        </button>
+      </div>
+
+      {/* Selected Page Display */}
+      <div>
+        {activeTab === 'profile' && <UserProfile />}
+        {activeTab === 'offers' && <WorkerOffers />}
+        {activeTab === 'appointments' && <WorkerAppointments />}
+      </div>
     </>
   );
 }
