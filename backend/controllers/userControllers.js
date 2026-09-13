@@ -1,14 +1,15 @@
 import * as User from "../models/userModel.js";
 // imports all as User
 
-const getAllUser = (req, res) => {
-    res.json(User.getAll());
+const getAllUser = async (req, res) => {
+    const getAllResponse = await User.getAll()
+    res.json(getAllResponse);
 };
 
-const createNewUser = (req, res) => {
+const createNewUser = async (req, res) => {
     const data = req.body
     
-    const newUser = User.addOne(data)
+    const newUser = await User.addOne(data)
 
     if (newUser.error) {
         res.status(400).json({message: newUser.error });
@@ -17,36 +18,37 @@ const createNewUser = (req, res) => {
     }
 };
 
-const findUserById = (req, res) => {
+const findUserById = async (req, res) => {
     const userId = req.params.userId;
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) res.status(404).json({message: "User not found"});
     else res.json(user); 
 };
 
-const updateUserById = (req, res) => {
+const updateUserById = async (req, res) => {
     const userId = req.params.userId;
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
     const updatedData = req.body;
 
     if(!user) res.status(404).json({message: "User not found"});
     
     else {
-        const updatedUser = User.updateById(userId, updatedData);
+        const  updatedUser = await User.updateById(userId, updatedData);
         res.json(updatedUser);
     }
 }
 
-const deleteUserById = (req, res) => {
+const deleteUserById = async (req, res) => {
     const userId = req.params.userId;
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) res.status(404).json({message: "User not found "})
     
     else {
-        const isDeleted = User.deleteById(userId);
-        if (isDeleted) res.status(204).json({message: "Delete user successfully"})
+        const isDeleted = await User.deleteById(userId);
+        if (isDeleted) res.status(200).json({message: "Delete user successfully"})
+        else res.status(500).json({message: "Delete failed"}); 
     }
 }
 
