@@ -31,3 +31,5 @@ const carSchema = new mongoose.Schema(
         estimatedPrice: { type: Number, default: null },
     }
 )
+
+export default mongoose.model("Car", carSchema);

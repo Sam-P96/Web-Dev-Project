@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "../src/models/User.js";
+import Appointment from "../src/models/Appointment.js";
 
 
 //Data model
@@ -16,7 +16,7 @@ import User from "../src/models/User.js";
 }
 */
 
-let userArray = [];
+let appointmentArray = [];
 let nextId = 1;
 
 // Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
@@ -33,10 +33,10 @@ let nextId = 1;
 
 // new Require Fields
 
-const REQUIRED_FIELDS = ['name', 'email', 'password'];
+const REQUIRED_FIELDS = ['car', 'seller', 'scheduledAt'];
 
 const ALLOWED_UPDATE_FIELDS = [
-    'name', 'email', 'password', 'phone', 'address', 'age'
+    'worker', 'scheduledAt', 'location', 'notes', 'status'
 ];
 
 const SIGNUP_ROLES = ['client', 'worker'];
@@ -45,7 +45,7 @@ const SIGNUP_ROLES = ['client', 'worker'];
 
 
 const getAll = async () => {
-    return await User.find();
+    return await Appointment.find();
 };
 
 const addOne = async (data) => {
@@ -54,22 +54,17 @@ const addOne = async (data) => {
         return { error: `Missing required fields: ${missing.join(', ')}` };
     }
 
-    //Block bad POST with role !SIGNUP_ROLES
-    if (!SIGNUP_ROLES.includes(data.role)) {
-        return { error: `Invalid role. Allowed ${SIGNUP_ROLES.join(', ')}` }
-    }
-
     try {
-        const newUser = await User.create({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: data.phone,
-            address: data.address,
-            age: data.age,
-            role: data.role ?? "client"
+        const newAppointment = await Appointment.create({
+            car: data.car,
+            seller: data.seller,
+            worker: data.worker ?? null,
+            scheduledAt: data.scheduledAt,
+            location: data.location,
+            notes: data.notes,
+            status: data.status ?? "booked"
         });
-        return newUser;
+        return newAppointment;
     } catch (err) {
         if (err.code === 11000) {
             const field = Object.keys(err.keyPattern)[0];
@@ -82,8 +77,8 @@ const addOne = async (data) => {
 const findById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findById(id);
-    return user ?? false;
+    const appointment = await Appointment.findById(id);
+    return appointment ?? false;
 };
 
 const updateById = async (id, updatedData) => {
@@ -96,19 +91,19 @@ const updateById = async (id, updatedData) => {
         }
     });
 
-    const user = await User.findByIdAndUpdate(id, allowed, {
+    const appointment = await Appointment.findByIdAndUpdate(id, allowed, {
         new: true,
         runValidators: true
     });
 
-    return user ?? false;
+    return appointment ?? false;
 };
 
 const deleteById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findByIdAndDelete(id);
-    return user ? true : false;
+    const appointment = await Appointment.findByIdAndDelete(id);
+    return appointment ? true : false;
 };
 
 
