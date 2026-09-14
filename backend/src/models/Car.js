@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+// ⚠️⚠️⚠️Dont delete all the notes for this one, still in progress (images)
+
+
 /* "Condition" was suggested by claude... but it's so subjective. I dont know. Might remove. Actually, probably should remove.
 ^Will discuss in the meeting 
 
