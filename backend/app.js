@@ -16,6 +16,7 @@ import connectDB from "./src/config/db.js";
 import userRouter from "./routes/userRouter.js";
 import AppointmentRouter from "./routes/appointmentRouter.js";
 import CarRouter from "./routes/carRouter.js";
+import OfferRouter from "./routes/offerRouter.js";
 
 //load env varaibles
 dotenv.config();
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use("/", userRouter);
 app.use("/", AppointmentRouter);
 app.use("/", CarRouter);
+app.use("/", OfferRouter);
 
 const port = process.env.PORT || 3000;
 
