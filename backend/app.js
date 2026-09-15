@@ -1,18 +1,12 @@
-// const express = require("express");
-// const morgan = require('morgan')
-// commenting this out for now, theres a new one around line 17
-// const app = express(); 
-
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 // cors = cross origin resource sharing (browser security rule)
 import cors from "cors";
-import connectDB from "./src/config/db.js";
+import connectDB from "./db.js";
 
 
 //ROUTERS
-// const userRouter = require("./routes/userRouter");
 import userRouter from "./routes/userRouter.js";
 import AppointmentRouter from "./routes/appointmentRouter.js";
 import CarRouter from "./routes/carRouter.js";
