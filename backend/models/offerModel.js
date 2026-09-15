@@ -1,37 +1,39 @@
-0;import mongoose from "mongoose";
-import Offer from "../src/models/Offer.js";
+import mongoose from "mongoose";
 
+/*This is for the worker to make a price offer for a car a seller submits if the seller originally declined 
+the AI generated offer estimate. Maybe this could be used in junction with a form for the worker to fill in. 
+Note: I bet we could make an auto reply or auto fill for the worker wtih AI if we have time. 
 
-//Data model
-/*
-{
-    "full_name": "Mon",
-    "phone_number": "0123456789",
-    "email": "email@example.com",
-    "username": "callmemon",
-    "password": "1234",
-    "date_of_birth": "2022-02-22"
-    "role": "buyer"
-    "account_verified": true,
-}
+fIELDS:
+    car
+    worker
+    amount
+    message     
+    status      whether or not the offer made it through, so pending, accepted, rejected, the thing is.. for legal reasons
+                there should not be shown as accepted unless its confirmed in person, so there should ALWAYS be a disclaimer
+                where its said "accepted if..... meets a specific criteria" might have to make something for the message for that
+    respondAt   This i the date
+
 */
 
-let offerArray = [];
-let nextId = 1;
+const offerSchema = new mongoose.Schema(
+    {
+    car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+    worker: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    amount: { type: Number, required: true, min: 0 },
+    message: { type: String, trim: true },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending"
+    },
+    respondedAt: { type: Date, default: null }
+  },
+  { timestamps: true }
+);
 
-// Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
-// const REQUIRED_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'username', 'password', 'role'
-// ];
-// const OPTIONAL_FIELDS = [
-//     'date_of_birth'
-// ];
-// const ALLOWED_UPDATE_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'password', 'date_of_birth', 'account_verified'
-// ]
-// const SIGNUP_ROLES = ['seller', 'buyer'];
-
-// new Require Fields
+const Offer = mongoose.model("Offer", offerSchema)
+// Require Fields
 
 const REQUIRED_FIELDS = ['car', 'worker', 'amount', 'message'];
 
@@ -39,9 +41,6 @@ const REQUIRED_FIELDS = ['car', 'worker', 'amount', 'message'];
 const ALLOWED_UPDATE_FIELDS = [
     'worker', 'amount', 'message', 'status'
 ];
-
-
-
 
 const getAll = async () => {
     return await Offer.find();
@@ -103,11 +102,6 @@ const deleteById = async (id) => {
     const offer = await Offer.findByIdAndDelete(id);
     return offer ? true : false;
 };
-
-
-
-
-
 
 export {
     addOne,
