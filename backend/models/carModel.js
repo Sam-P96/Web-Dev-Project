@@ -1,35 +1,37 @@
 import mongoose from "mongoose";
-import Car from "../src/models/Car.js";
+
+// ⚠️⚠️⚠️Dont delete all the notes for this one, still in progress (images)
 
 
-//Data model
-/*
-{
-    "full_name": "Mon",
-    "phone_number": "0123456789",
-    "email": "email@example.com",
-    "username": "callmemon",
-    "password": "1234",
-    "date_of_birth": "2022-02-22"
-    "role": "buyer"
-    "account_verified": true,
-}
+/* "Condition" was suggested by claude... but it's so subjective. I dont know. Might remove. Actually, probably should remove.
+^Will discuss in the meeting 
+
+Fields:
+    seller
+    make
+    year
+    model
+    mileage         should be measured in km
+    condition       irrelevant for data collection
+    estimatePrice   in Euro 
 */
-
-let carArray = [];
-let nextId = 1;
-
-// Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
-// const REQUIRED_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'username', 'password', 'role'
-// ];
-// const OPTIONAL_FIELDS = [
-//     'date_of_birth'
-// ];
-// const ALLOWED_UPDATE_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'password', 'date_of_birth', 'account_verified'
-// ]
-// const SIGNUP_ROLES = ['seller', 'buyer'];
+const carSchema = new mongoose.Schema(
+    {
+        seller: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
+        make: {type: String, required: true, trim: true},
+        model: { type: String, required: true, trim: true },
+        year: { type: Number, required: true},
+        mileage: { type: Number, required: true, min: 0 },
+        // MAYBE USELESS CRITERIA for data collection but useful for buyers?
+        condition: { type: String, enum: ["poor", "fair", "good", "excellent"], default: "good" },
+        description: { type: String},
+        // Does anyone know this?
+        // images: [????????????HELP???????????????]
+        // CHECK WEB_DEV_SCHOOL_NOTES file on Drive to figure out how to fix this
+        estimatedPrice: { type: Number, default: null },
+    }
+);
+const Car = mongoose.model("Car", carSchema);
 
 // new Require Fields
 
@@ -105,11 +107,6 @@ const deleteById = async (id) => {
     const car = await Car.findByIdAndDelete(id);
     return car ? true : false;
 };
-
-
-
-
-
 
 export {
     addOne,
