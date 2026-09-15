@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import User from "../src/models/User.js";
+0;import mongoose from "mongoose";
+import Offer from "../src/models/Offer.js";
 
 
 //Data model
@@ -16,7 +16,7 @@ import User from "../src/models/User.js";
 }
 */
 
-let userArray = [];
+let offerArray = [];
 let nextId = 1;
 
 // Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
@@ -33,19 +33,18 @@ let nextId = 1;
 
 // new Require Fields
 
-const REQUIRED_FIELDS = ['name', 'email', 'password'];
+const REQUIRED_FIELDS = ['car', 'worker', 'amount', 'message'];
 
+// workers for offer can change (in case this is needed in a hypothetical scenario)
 const ALLOWED_UPDATE_FIELDS = [
-    'name', 'email', 'password', 'phone', 'address', 'age'
+    'worker', 'amount', 'message', 'status'
 ];
-
-const SIGNUP_ROLES = ['client', 'worker'];
 
 
 
 
 const getAll = async () => {
-    return await User.find();
+    return await Offer.find();
 };
 
 const addOne = async (data) => {
@@ -54,22 +53,16 @@ const addOne = async (data) => {
         return { error: `Missing required fields: ${missing.join(', ')}` };
     }
 
-    //Block bad POST with role !SIGNUP_ROLES
-    if (!SIGNUP_ROLES.includes(data.role)) {
-        return { error: `Invalid role. Allowed ${SIGNUP_ROLES.join(', ')}` }
-    }
-
     try {
-        const newUser = await User.create({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: data.phone,
-            address: data.address,
-            age: data.age,
-            role: data.role ?? "client"
+        const newOffer = await Offer.create({
+            car: data.car,
+            worker: data.worker,
+            amount: data.amount,
+            message: data.message,
+            status: data.status,
+            respondedAt: data.respondedAt,
         });
-        return newUser;
+        return newOffer;
     } catch (err) {
         if (err.code === 11000) {
             const field = Object.keys(err.keyPattern)[0];
@@ -77,13 +70,13 @@ const addOne = async (data) => {
         }
         return { error: err.message };
     }
-};
+    };
 
 const findById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findById(id);
-    return user ?? false;
+    const offer = await Offer.findById(id);
+    return offer ?? false;
 };
 
 const updateById = async (id, updatedData) => {
@@ -96,19 +89,19 @@ const updateById = async (id, updatedData) => {
         }
     });
 
-    const user = await User.findByIdAndUpdate(id, allowed, {
+    const offer = await Offer.findByIdAndUpdate(id, allowed, {
         new: true,
         runValidators: true
     });
 
-    return user ?? false;
+    return offer ?? false;
 };
 
 const deleteById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findByIdAndDelete(id);
-    return user ? true : false;
+    const offer = await Offer.findByIdAndDelete(id);
+    return offer ? true : false;
 };
 
 

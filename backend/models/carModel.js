@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "../src/models/User.js";
+import Car from "../src/models/Car.js";
 
 
 //Data model
@@ -16,7 +16,7 @@ import User from "../src/models/User.js";
 }
 */
 
-let userArray = [];
+let carArray = [];
 let nextId = 1;
 
 // Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
@@ -33,19 +33,18 @@ let nextId = 1;
 
 // new Require Fields
 
-const REQUIRED_FIELDS = ['name', 'email', 'password'];
+const REQUIRED_FIELDS = ['seller', 'make', 'model', 'year', 'mileage'];
 
+// seller is deliberately NOT updatable — you don't hand off ownership via PUT
 const ALLOWED_UPDATE_FIELDS = [
-    'name', 'email', 'password', 'phone', 'address', 'age'
+    'make', 'model', 'year', 'mileage', 'condition', 'description', 'estimatedPrice'
 ];
-
-const SIGNUP_ROLES = ['client', 'worker'];
 
 
 
 
 const getAll = async () => {
-    return await User.find();
+    return await Car.find();
 };
 
 const addOne = async (data) => {
@@ -54,22 +53,18 @@ const addOne = async (data) => {
         return { error: `Missing required fields: ${missing.join(', ')}` };
     }
 
-    //Block bad POST with role !SIGNUP_ROLES
-    if (!SIGNUP_ROLES.includes(data.role)) {
-        return { error: `Invalid role. Allowed ${SIGNUP_ROLES.join(', ')}` }
-    }
-
     try {
-        const newUser = await User.create({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: data.phone,
-            address: data.address,
-            age: data.age,
-            role: data.role ?? "client"
+        const newCar = await Car.create({
+            seller: data.seller,
+            make: data.make,
+            model: data.model,
+            year: data.year,
+            mileage: data.mileage,
+            condition: data.condition,
+            description: data.description,
+            estimatedPrice: data.estimatedPrice,
         });
-        return newUser;
+        return newCar;
     } catch (err) {
         if (err.code === 11000) {
             const field = Object.keys(err.keyPattern)[0];
@@ -82,8 +77,8 @@ const addOne = async (data) => {
 const findById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findById(id);
-    return user ?? false;
+    const car = await Car.findById(id);
+    return car ?? false;
 };
 
 const updateById = async (id, updatedData) => {
@@ -96,19 +91,19 @@ const updateById = async (id, updatedData) => {
         }
     });
 
-    const user = await User.findByIdAndUpdate(id, allowed, {
+    const car = await Car.findByIdAndUpdate(id, allowed, {
         new: true,
         runValidators: true
     });
 
-    return user ?? false;
+    return car ?? false;
 };
 
 const deleteById = async (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const user = await User.findByIdAndDelete(id);
-    return user ? true : false;
+    const car = await Car.findByIdAndDelete(id);
+    return car ? true : false;
 };
 
 
