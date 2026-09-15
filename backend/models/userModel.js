@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import User from "../src/models/User.js";
 
 
-//Data model
+//Example model
 /*
 {
     "full_name": "Mon",
@@ -16,23 +15,24 @@ import User from "../src/models/User.js";
 }
 */
 
-let userArray = [];
-let nextId = 1;
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, trim: true },
+    email: { type: String, required: true, trim: true },
+    password: { type: String, required: true },
+    phone: { type: String, trim: true },
+    address: { type: String, trim: true },
+    age: { type: Number},
+    role: { type: String, enum: ["client", "worker", "admin"], default: "client" },
+    browsingHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Car" }]
+  },
+  { timestamps: true }
+);
 
-// Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
-// const REQUIRED_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'username', 'password', 'role'
-// ];
-// const OPTIONAL_FIELDS = [
-//     'date_of_birth'
-// ];
-// const ALLOWED_UPDATE_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'password', 'date_of_birth', 'account_verified'
-// ]
-// const SIGNUP_ROLES = ['seller', 'buyer'];
+const User = mongoose.model("User", userSchema)
 
-// new Require Fields
 
+// Require Fields
 const REQUIRED_FIELDS = ['name', 'email', 'password'];
 
 const ALLOWED_UPDATE_FIELDS = [
@@ -40,8 +40,6 @@ const ALLOWED_UPDATE_FIELDS = [
 ];
 
 const SIGNUP_ROLES = ['client', 'worker'];
-
-
 
 
 const getAll = async () => {
@@ -110,11 +108,6 @@ const deleteById = async (id) => {
     const user = await User.findByIdAndDelete(id);
     return user ? true : false;
 };
-
-
-
-
-
 
 export {
     addOne,

@@ -1,36 +1,35 @@
 import mongoose from "mongoose";
-import Appointment from "../src/models/Appointment.js";
 
-
-//Data model
-/*
-{
-    "full_name": "Mon",
-    "phone_number": "0123456789",
-    "email": "email@example.com",
-    "username": "callmemon",
-    "password": "1234",
-    "date_of_birth": "2022-02-22"
-    "role": "buyer"
-    "account_verified": true,
-}
+/* 
+Field
+  car
+  seller
+  worker
+  scheduledAt   TBD the format, but talked to Aakash about this, and that Aakash and Duy will work this out, then I can store it here
+  location
+  notes
+  status        default is "booked"
 */
 
-let appointmentArray = [];
-let nextId = 1;
 
-// Old REQUIRED FIELD by Duy (maybe remove, we need to discuss)
-// const REQUIRED_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'username', 'password', 'role'
-// ];
-// const OPTIONAL_FIELDS = [
-//     'date_of_birth'
-// ];
-// const ALLOWED_UPDATE_FIELDS = [
-//     'full_name', 'phone_number', 'email', 'password', 'date_of_birth', 'account_verified'
-// ]
-// const SIGNUP_ROLES = ['seller', 'buyer'];
+const appointmentSchema = new mongoose.Schema(
+  {
+    car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    worker: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    scheduledAt: { type: Date, required: true },
+    location: { type: String},
+    notes: { type: String},
+    status: {
+      type: String,
+      enum: ["booked", "confirmed", "completed", "cancelled"],
+      default: "booked"
+    }
+  },
+  { timestamps: true }
+);
 
+const Appointment = mongoose.model("Appointment", appointmentSchema);
 // new Require Fields
 
 const REQUIRED_FIELDS = ['car', 'seller', 'scheduledAt'];
