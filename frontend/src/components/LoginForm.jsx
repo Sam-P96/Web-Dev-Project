@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { z } from 'zod';
 
@@ -25,22 +26,6 @@ const LoginForm = () => {
         setErrors((prev) => ({ ...prev, [fieldName]: '' }));
       }
     }
-    // console.log(fieldSchema);
-
-    // const validate = LoginSchema.safeParse(field);
-    // console.log(field);
-    // console.log(validate);
-    // if (!validate.success) {
-    //   const flattened = z.flattenError(validate.error);
-    //   const fieldErrors = flattened.fieldErrors;
-    //   // console.log(flattened);
-    //   // console.log(fieldErrors);
-    //   setErrors({
-    //     field: fieldErrors.field ? fieldErrors.field[0] : '',
-    //   });
-    // } else {
-    //   setErrors({});
-    // }
   };
 
   const handleSubmit = (e) => {
@@ -68,22 +53,15 @@ const LoginForm = () => {
       <main className="min-h-162.5 bg-[#f5f6f4] flex justify-center items-center px-5 py-15 max-[600px]:px-3.75 max-[600px]:py-10">
         <div className=" w-full max-w-115 bg-white border border-[#e3e6e2] rounded-[14px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.06)] max-[600px]:px-5.5 max-[600px]:py-7">
           <div className="text-center mb-7.5">
-            <p className="text-[#2f9449] text-xs font-extrabold tracking-[1.5px]">
-              WELCOME BACK
-            </p>
+            <p className="text-[#2f9449] text-xs font-extrabold tracking-[1.5px]">WELCOME BACK</p>
             <h1 className="text-[30px] font-bold mt-1.25 mb-2 max-[600px]:text-[26px]">
               Login to AutoTori
             </h1>
-            <p className="text-[#777d78] text-sm">
-              Sign in to manage your cars and account.
-            </p>
+            <p className="text-[#777d78] text-sm">Sign in to manage your cars and account.</p>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="mb-5">
-              <label
-                htmlFor="email"
-                className="block text-sm font-bold mb-1.75"
-              >
+              <label htmlFor="email" className="block text-sm font-bold mb-1.75">
                 Email Address
               </label>
               <input
@@ -97,15 +75,10 @@ const LoginForm = () => {
                   outline-none text-sm bg-white
                   focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)] ${errors.email ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
             <div className="mb-5">
-              <label
-                htmlFor="password"
-                className="block text-sm font-bold mb-1.75"
-              >
+              <label htmlFor="password" className="block text-sm font-bold mb-1.75">
                 Password
               </label>
               <input
@@ -119,9 +92,7 @@ const LoginForm = () => {
                   outline-none text-sm bg-white
                   focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)] ${errors.password ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
-              )}
+              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
             </div>
             <div
               className="flex justify-between items-center mt-1.25 mb-5.5 text-[13px]
@@ -151,9 +122,9 @@ const LoginForm = () => {
           </div>
           <div className="text-center text-[#707671] text-[13px]">
             Don't have an account?{' '}
-            <a href="register.html" className="text-[#247f3d] font-bold">
+            <Link to="/create-account" className="text-[#247f3d] font-bold">
               Create Account
-            </a>
+            </Link>
           </div>
         </div>
       </main>

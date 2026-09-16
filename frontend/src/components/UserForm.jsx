@@ -67,17 +67,12 @@ export const UserForm = () => {
         <form onSubmit={handleSubmit} className="">
           {/* User INFORMATION */}
           <div className="text-center mb-5 ">
-            <p className="text-sm font-semibold text-[#2f9449] p-5">
-              USER INFORMATION
-            </p>
+            <p className="text-sm font-semibold text-[#2f9449] p-5">USER INFORMATION</p>
             <h2 className="text-4xl font-bold">Create Your Account</h2>
           </div>
           <div className=" grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
             <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-bold mb-2"
-              >
+              <label htmlFor="firstName" className="block text-sm font-bold mb-2">
                 First Name
               </label>
               <input
@@ -88,16 +83,11 @@ export const UserForm = () => {
                 placeholder="e.g. John"
                 className={`w-full h-12 p-4 border border-[#d8dcd8] rounded-[7px] outline-none text-sm bg-white focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)] ${errors.firstName ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.firstName && (
-                <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>
-              )}
+              {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
             </div>
 
             <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-bold mb-2"
-              >
+              <label htmlFor="lastName" className="block text-sm font-bold mb-2">
                 Last Name
               </label>
               <input
@@ -108,16 +98,11 @@ export const UserForm = () => {
                 placeholder="e.g. Doe"
                 className={`w-full h-12 p-4 border border-[#d8dcd8] rounded-[7px] outline-none text-sm bg-white focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)] ${errors.lastName ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'} `}
               />
-              {errors.lastName && (
-                <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>
-              )}
+              {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
             </div>
 
             <div className="md:col-span-2">
-              <label
-                htmlFor="address"
-                className="block text-sm font-bold mb-1.75"
-              >
+              <label htmlFor="address" className="block text-sm font-bold mb-1.75">
                 Address
               </label>
               <input
@@ -130,10 +115,7 @@ export const UserForm = () => {
             </div>
 
             <div className="md:col-span-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-bold mb-1.75"
-              >
+              <label htmlFor="email" className="block text-sm font-bold mb-1.75">
                 Email
               </label>
               <input
@@ -144,9 +126,7 @@ export const UserForm = () => {
                 placeholder="e.g. john.doe@example.com"
                 className={`${inputClasses} ${errors.email ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
             <div className="">
               <label htmlFor="password" className={labelClasses}>
@@ -160,9 +140,7 @@ export const UserForm = () => {
                 placeholder="Create a strong password"
                 className={`${inputClasses} ${errors.password ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
-              )}
+              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
             </div>
             <div className="">
               <label htmlFor="confirmPassword" className={labelClasses}>
@@ -177,9 +155,7 @@ export const UserForm = () => {
                 className={`${inputClasses} ${errors.confirmPassword ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.confirmPassword}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -207,9 +183,7 @@ export const UserForm = () => {
                 onChange={handleChange}
                 className={`${inputClasses} ${errors.dob ? 'border-red-500' : 'border-[#d8dcd8] focus:border-[#247f3d]'}`}
               />
-              {errors.dob && (
-                <p className="mt-1 text-xs text-red-500">{errors.dob}</p>
-              )}
+              {errors.dob && <p className="mt-1 text-xs text-red-500">{errors.dob}</p>}
             </div>
           </div>
           {/* SUBMIT */}
