@@ -6,6 +6,7 @@ import LoginPrime from "./pages/LoginPrime"
 import UserProfilePrime from "./pages/UserProfilePrime";
 import WorkerAppointments from "./pages/WorkerAppointments"
 import SubmitCarPrime from "./pages/SubmitCarPrime";
+import FindCarsPrime from "./pages/FindCarsPrime";
 
 
 
@@ -19,6 +20,7 @@ function AppPrime() {
                 <Route path="/profile" element={<UserProfilePrime />} />
                 <Route path="/employee_booking" element={<WorkerAppointments />} />
                 <Route path="/submit_page" element={<SubmitCarPrime />} />
+                <Route path="/find_cars" element={<FindCarsPrime />} />
 
             </Routes>
             <FooterPrime />

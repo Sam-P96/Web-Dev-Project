@@ -9,9 +9,9 @@ function NavbarPrime() {
         <Link to="/" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Home
         </Link>
-        <a href="listings.html" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
-          Cars
-        </a>
+        <Link to="/find_cars" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+          Sell Your Car
+        </Link>
         <Link to="/submit_page" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Sell Your Car
         </Link>
