@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+
 const Navbar = () => {
   const [isOpen,setIsOpen]=useState(false)
   return (
@@ -34,7 +35,7 @@ const Navbar = () => {
         </button>
         {isOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-[#e8eae7] flex flex-col gap-4.5 px-[6%] py-6 shadow-md z-50">
-            <a href="index.html" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]">
+            <a href="" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]">
               Home
             </a>
             <a href="listings.html" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]">
