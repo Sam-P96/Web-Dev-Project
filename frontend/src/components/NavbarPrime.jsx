@@ -12,18 +12,26 @@ function NavbarPrime() {
         <a href="listings.html" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Cars
         </a>
-        <a href="car-form.html" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+        <Link to="/submit_page" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Sell Your Car
-        </a>
+        </Link>
+        <Link to="/employee_booking" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+          Bookings
+        </Link>
         <a href="#" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           About Us
         </a>
-        <a href="#" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+        {/* <a href="#" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Financing
-        </a>
+        </a> */}
         <a href="#" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Contact
         </a>
+        
+        <Link to="/profile" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+          Account
+        </Link>
+        
       </nav>
       <div className="flex items-center gap-3.75 shrink-0">
         <select
