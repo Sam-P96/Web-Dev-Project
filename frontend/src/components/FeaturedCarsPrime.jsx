@@ -56,25 +56,15 @@ const placeholderCars = [{
 
 function FeaturedCarsPrime() {
   return (
-    <section className="featured-section">
-      <div className="section-heading">
-        <div>
-          <p className="section-label">OUR COLLECTION</p>
-          <h2>Featured Cars</h2>
+    <section className="max-w-[1200px] mx-auto px-[6%] py-16">
+      <div className="flex items-end justify-between gap-4 mb-8">
+        <div className="flex flex-col gap-2">
+          <p className="text-[#2f9449] text-xs font-extrabold tracking-[1.5px]">OUR COLLECTION</p>
+          <h2 className="text-[32px] font-bold text-[#202522] max-[700px]:text-[26px]">Featured Cars</h2>
         </div>
-        <a href="listings.html">View All Cars →</a>
+        <a href="listings.html" className="text-sm font-bold text-[#1f7a38] whitespace-nowrap transition duration-200 hover:text-[#185f2c]">View All Cars →</a>
       </div>
-
-      <div className="featured-grid">
-        <CarCardPrime
-          image=""
-          name="Mercedes-Benz C-Class"
-          year={2022}
-          km="38,500"
-          location="Helsinki, Finland"
-          price="€34,990"
-        />
-        <div className="featured-grid">
+        <div className="grid grid-cols-3 gap-6 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
           {placeholderCars.map((car) => (
             <CarCardPrime
               key={car.id}
@@ -85,7 +75,6 @@ function FeaturedCarsPrime() {
               location={car.location}
               price={car.price} />
           ))}
-        </div>
       </div>
     </section>
   )
