@@ -7,7 +7,7 @@ import UserProfilePrime from "./pages/UserProfilePrime";
 import WorkerAppointments from "./pages/WorkerAppointments"
 import SubmitCarPrime from "./pages/SubmitCarPrime";
 import FindCarsPrime from "./pages/FindCarsPrime";
-
+import CreateAccountPrime from "./pages/CreateAccountPrime";
 
 
 function AppPrime() {
@@ -21,6 +21,7 @@ function AppPrime() {
                 <Route path="/employee_booking" element={<WorkerAppointments />} />
                 <Route path="/submit_page" element={<SubmitCarPrime />} />
                 <Route path="/find_cars" element={<FindCarsPrime />} />
+                <Route path="/register" element={<CreateAccountPrime />} />
 
             </Routes>
             <FooterPrime />

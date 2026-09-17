@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function SearchPrime() {
   return (
     <section className="bg-[#f5f6f4] px-[6%] py-16">
@@ -64,10 +66,10 @@ function SearchPrime() {
             </select>
           </div>
         </div>
-        <a href="listings.html" className="h-11.5 flex items-center justify-center px-8 shrink-0 bg-[#1f7a38] text-white rounded-[7px] font-bold transition duration-200 hover:bg-[#185f2c]"
+        <Link to="/find_cars" className="h-11.5 flex items-center justify-center px-8 shrink-0 bg-[#1f7a38] text-white rounded-[7px] font-bold transition duration-200 hover:bg-[#185f2c]"
         >
           Search
-        </a>
+        </Link>
       </div>
     </section>
   );

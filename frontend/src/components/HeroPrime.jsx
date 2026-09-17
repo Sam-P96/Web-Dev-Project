@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 function HeroPrime() {
   return (
     <section className="bg-[#202522] text-white px-[6%] py-24 max-[700px]:py-16">
@@ -12,14 +13,15 @@ function HeroPrime() {
           Discover quality cars from trusted sellers across Finland.
         </p>
         <div className="flex gap-3.75 mt-4 max-[500px]:flex-col">
-          <a href="listings.html"
+          <Link to="/find_cars"
             className="bg-[#1f7a38] text-white px-6 py-3.25 rounded-[7px] font-bold text-center transition duration-200 hover:bg-[#185f2c]">
             Browse Cars
-          </a>
-          <a href="car-form.html"
+          </Link>
+
+          <Link to="submit_page"
             className="border border-white/40 text-white px-6 py-3.25 rounded-[7px] font-bold text-center transition duration-200 hover:bg-white hover:text-[#202522]">
             Sell Your Car
-          </a>
+          </Link>
         </div>
       </div>
     </section>
