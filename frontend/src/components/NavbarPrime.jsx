@@ -10,7 +10,7 @@ function NavbarPrime() {
           Home
         </Link>
         <Link to="/find_cars" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
-          Sell Your Car
+          Listing
         </Link>
         <Link to="/submit_page" className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
           Sell Your Car
