@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 
 const LoginSchema = z.object({
@@ -151,9 +151,9 @@ const LoginForm = () => {
           </div>
           <div className="text-center text-[#707671] text-[13px]">
             Don't have an account?{' '}
-            <a href="register.html" className="text-[#247f3d] font-bold">
+            <Link to="/register" className="text-[#247f3d] font-bold">
               Create Account
-            </a>
+            </Link>
           </div>
         </div>
       </main>

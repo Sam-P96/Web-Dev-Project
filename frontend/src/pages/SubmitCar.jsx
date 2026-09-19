@@ -1,31 +1,24 @@
-import React from 'react'
-import CarForm from '../components/CarForm'
-import Navbar from '../components/Navbar'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-
+import React from 'react';
+import CarForm from '../components/CarForm';
+import Navbar from '../components/Navbar';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const SubmitCar = () => {
   return (
     <>
-  <title>Submit Car</title>
+      <title>Submit Car</title>
 
+      {/* HEADER */}
+      <Header />
 
-{/* NAVBAR */}
-  <Navbar/>
+      {/* FORM */}
+      <CarForm />
 
-{/* HEADER */}
- <Header/>
+      {/* FOOTER */}
+      <Footer />
+    </>
+  );
+};
 
-  {/* FORM */}
-  <CarForm/>
-
-  {/* FOOTER */}
-  <Footer/>
-
-</>
-
-  )
-}
-
-export default SubmitCar
+export default SubmitCar;
