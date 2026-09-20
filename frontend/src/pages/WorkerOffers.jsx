@@ -1,57 +1,82 @@
-import React, { useState } from 'react';
+import { getAllCars, updateCar } from '@/apis/carApi';
+import React, { useEffect, useState } from 'react';
 
-const initialOffers = [
-  {
-    id: 'OFF-101',
-    carName: '2023 Mercedes-Benz C-Class',
-    sellerName: 'Mikko',
-    price: 34990,
-    status: 'Pending',
-    submittedDate: '2026-09-05',
-    mileage: '38,500 km',
-    location: 'Helsinki',
-    image:
-      'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'OFF-102',
-    carName: '2021 BMW 3 Series',
-    sellerName: 'Sanna',
-    price: 31500,
-    status: 'Accepted',
-    submittedDate: '2026-09-04',
-    mileage: '45,200 km',
-    location: 'Espoo',
-    image:
-      'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'OFF-103',
-    carName: '2020 Audi A4',
-    sellerName: 'Juho',
-    price: 28990,
-    status: 'Rejected',
-    submittedDate: '2026-09-02',
-    mileage: '52,000 km',
-    location: 'Vantaa',
-    image:
-      'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=600&q=80',
-  },
-];
+// const initialOffers = [
+//   {
+//     id: 'OFF-101',
+//     carName: '2023 Mercedes-Benz C-Class',
+//     sellerName: 'Mikko',
+//     price: 34990,
+//     status: 'Pending',
+//     submittedDate: '2026-09-05',
+//     mileage: '38,500 km',
+//     location: 'Helsinki',
+//     image:
+//       'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=600&q=80',
+//   },
+//   {
+//     id: 'OFF-102',
+//     carName: '2021 BMW 3 Series',
+//     sellerName: 'Sanna',
+//     price: 31500,
+//     status: 'Accepted',
+//     submittedDate: '2026-09-04',
+//     mileage: '45,200 km',
+//     location: 'Espoo',
+//     image:
+//       'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80',
+//   },
+//   {
+//     id: 'OFF-103',
+//     carName: '2020 Audi A4',
+//     sellerName: 'Juho',
+//     price: 28990,
+//     status: 'Rejected',
+//     submittedDate: '2026-09-02',
+//     mileage: '52,000 km',
+//     location: 'Vantaa',
+//     image:
+//       'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=600&q=80',
+//   },
+// ];
 
 export default function WorkerOffers() {
-  const [offers, setOffers] = useState(initialOffers);
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const data = await getAllCars();
+
+        console.log(data);
+
+        const formattedOffers = data.map((car) => ({
+          id: car._id,
+          carName: `${car.make} ${car.model}`,
+          mileage: `${car.mileage.toLocaleString()} km`,
+          location: 'Unknown',
+          sellerName: car.seller,
+          price: car.estimatedPrice,
+          status: car.isVerified,
+          image: '',
+          submittedDate: car.year,
+        }));
+
+        setOffers(formattedOffers);
+      } catch (error) {
+        console.error('Failed to fetch cars:', error);
+      }
+    };
+
+    fetchCars();
+  }, []);
+
+  const [offers, setOffers] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [filterStatus, setFilterStatus] = useState('All');
 
-  const handleStatusChange = (id, newStatus) => {
-    setOffers((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item)),
-    );
-
-    if (selectedOffer && selectedOffer.id === id) {
-      setSelectedOffer((prev) => ({ ...prev, status: newStatus }));
-    }
+  const handleStatusChange = async (id, status) => {
+    console.log(id);
+    const updateStatus = await updateCar(id, status);
+    console.log(updateStatus);
   };
 
   const filteredOffers = offers.filter((offer) => {
@@ -239,21 +264,29 @@ export default function WorkerOffers() {
               </div>
 
               {/* MODAL ACTIONS */}
-              <div className="flex items-center justify-end gap-3 p-5 border-t border-[#e8eae7] bg-[#fafbfa]">
-                <button
-                  onClick={() => handleStatusChange(selectedOffer.id, 'Rejected')}
-                  className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-sm px-4 py-2 rounded-[7px] border border-rose-200 transition"
-                >
-                  Reject Offer
-                </button>
+              {selectedOffer.status === 'Pending' && (
+                <div className="flex items-center justify-end gap-3 p-5 border-t border-[#e8eae7] bg-[#fafbfa]">
+                  <button
+                    onClick={() => handleStatusChange(selectedOffer.id, 'Rejected')}
+                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-sm px-4 py-2 rounded-[7px] border border-rose-200 transition  disabled:cursor-not-allowed"
+                    disabled={
+                      selectedOffer.status === 'Accepted' || selectedOffer.status === 'Rejected'
+                    }
+                  >
+                    Reject Offer
+                  </button>
 
-                <button
-                  onClick={() => handleStatusChange(selectedOffer.id, 'Accepted')}
-                  className="bg-[#247f3d] hover:bg-[#1b6730] text-white font-bold text-sm px-4 py-2 rounded-[7px] transition shadow-sm"
-                >
-                  Accept Offer
-                </button>
-              </div>
+                  <button
+                    onClick={() => handleStatusChange(selectedOffer.id, 'Accepted')}
+                    className="bg-[#247f3d] hover:bg-[#1b6730] text-white font-bold text-sm px-4 py-2 rounded-[7px] transition shadow-sm  disabled:cursor-not-allowed"
+                    disabled={
+                      selectedOffer.status === 'Accepted' || selectedOffer.status === 'Rejected'
+                    }
+                  >
+                    Verify Offer
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
