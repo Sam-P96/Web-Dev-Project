@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 ^Will discuss in the meeting
 
 Fields:
-    seller
+    client
     make
     year
     model
@@ -15,11 +15,15 @@ Fields:
     estimatePrice   in Euro
 */
 const carSchema = new mongoose.Schema({
-  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   make: { type: String, required: true, trim: true },
   model: { type: String, required: true, trim: true },
   year: { type: Number, required: true },
   mileage: { type: Number, required: true, min: 0 },
+  // Added this cus the form had them. - Sam
+  fuel: { type: String, trim: true },
+  transmission: { type: String, trim: true },
+  location: { type: String, trim: true },
   // MAYBE USELESS CRITERIA for data collection but useful for buyers?
   condition: { type: String, enum: ['poor', 'fair', 'good', 'excellent'], default: 'good' },
   description: { type: String },
@@ -33,14 +37,17 @@ const Car = mongoose.model('Car', carSchema);
 
 // new Require Fields
 
-const REQUIRED_FIELDS = ['seller', 'make', 'model', 'year', 'mileage'];
+const REQUIRED_FIELDS = ['client', 'make', 'model', 'year', 'mileage'];
 
-// seller is deliberately NOT updatable — you don't hand off ownership via PUT
+// client is deliberately NOT updatable — you don't hand off ownership via PUT
 const ALLOWED_UPDATE_FIELDS = [
   'make',
   'model',
   'year',
   'mileage',
+  'fuel',
+  'transmission',
+  'location',
   'condition',
   'description',
   'estimatedPrice',
@@ -59,11 +66,14 @@ const addOne = async (data) => {
 
   try {
     const newCar = await Car.create({
-      seller: data.seller,
+      client: data.client,
       make: data.make,
       model: data.model,
       year: data.year,
       mileage: data.mileage,
+      fuel: data.fuel,
+      transmission: data.transmission,
+      location: data.location,
       condition: data.condition,
       description: data.description,
       estimatedPrice: data.estimatedPrice,

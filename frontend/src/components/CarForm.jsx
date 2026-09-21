@@ -1,26 +1,32 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
+import { createCar } from '../apis/carApi';
+
+// PLACE HODLER CLIENT ID
+const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3"
 
 const CarSchema = z.object({
   make: z.string().min(1, 'please select one'),
   model: z.string().min(2, 'please enter the model'),
-  year: z.string().min(1, 'please select the model'),
-  mileage: z.coerce.number().max(70, 'you gotta be kidding me'),
+  year: z.string().min(1, 'please select the year'),
+  mileage: z.coerce.number().min(0, 'mileage cannot be negative'),
   fuel: z.string().min(1, 'please select one'),
   transmission: z.string().min(1, 'please select one'),
   price: z.coerce.number().min(1000, "don't hesitate, we will do the rest"),
   condition: z.string().min(1, 'please select one'),
-  carImage: z
-    .custom((file) => file instanceof File && file.size > 0, {
-      message: 'please select an image',
-    })
-    .refine((file) => file?.size <= 5 * 1024 * 1024, {
-      message: 'image size must be under 5MB',
-    }),
+  // TODO: ADD CAR IMAGE FOR LATER ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️Aakash over here!!! Or i can cover this, idk.⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+  // carImage: z
+  //   .custom((file) => file instanceof File && file.size > 0, {
+  //     message: 'please select an image',
+  //   })
+  //   .refine((file) => file?.size <= 5 * 1024 * 1024, {
+  //     message: 'image size must be under 5MB',
+  //   }),
 });
 
 export const CarForm = () => {
-  const [errors, setErrors] = useState('');
+  const [errors, setErrors] = useState({});
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleChange = (e) => {
     const fieldName = e.target.name;
@@ -35,19 +41,46 @@ export const CarForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const values = Object.fromEntries(formData.entries());
-    console.log(values);
+
     const validate = CarSchema.safeParse(values);
+
     if (!validate.success) {
+      // man, idk who made this, but what is this? 
       const errors = z.flattenError(validate.error).fieldErrors;
       setErrors(errors);
       return;
     }
     setErrors({});
     console.log(values);
+
+    const carData = {
+      client: PLACEHOLDER_CLIENT_ID,
+      make: validate.data.make,
+      model: validate.data.model,
+      year: Number(validate.data.year),
+      mileage: validate.data.mileage,
+      fuel: validate.data.fuel,
+      transmission: validate.data.transmission,
+      estimatedPrice: validate.data.price,
+      condition: validate.data.condition,
+      location: values.location,
+      description: values.description,
+    };
+
+    const result = await createCar(carData);
+
+    if (result.ok) {
+      setSubmitStatus({ type: 'success', text: 'Your car has been listed!' });
+      form.reset();
+    } else {
+      setSubmitStatus({ type: 'error', text: result.data.message });
+    }
   };
 
   return (
@@ -275,9 +308,9 @@ export const CarForm = () => {
               className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.condition ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
             >
               <option value="">Select Condition</option>
-              <option>Excellent</option>
-              <option>Good</option>
-              <option>Fair</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
             </select>
             {errors.condition && (
               <p className="mt-1 text-xs text-red-500">{errors.condition}</p>
@@ -324,69 +357,18 @@ export const CarForm = () => {
               Upload a clear photo of your car.
             </p>
           </div>
-
-          {/* SELLER INFORMATION
-          <div className="mt-3.75 mb-7 border-t border-[#e8ebe8] pt-7.5">
-            <p className="text-3 font-extrabold tracking-[1.5px] text-[#2f9449]">
-              SELLER DETAILS
+          
+          {
+          // Recommended by claude when I was debugging
+          submitStatus && (
+            <p
+              className={`mb-4 text-sm font-semibold ${
+                submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
+              }`}
+            >
+              {submitStatus.text}
             </p>
-            <h2 className="mt-1.25 text-6.25 font-bold text-[#202522] max-[700px]:text-5.5">
-              Your Contact Information
-            </h2>
-          </div>
-
-          <div className="mb-5 grid grid-cols-2 gap-5 max-[700px]:grid-cols-1 max-[700px]:gap-0">
-            <div className="mb-0 max-[700px]:mb-5">
-              <label
-                htmlFor="seller-name"
-                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="seller-name"
-                name="seller-name"
-                placeholder="Your full name"
-                required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
-              />
-            </div>
-
-            <div className="mb-0 max-[700px]:mb-5">
-              <label
-                htmlFor="seller-email"
-                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="seller-email"
-                name="seller-email"
-                placeholder="you@example.com"
-                required
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
-              />
-            </div>
-
-            <div className="mb-0 max-[700px]:mb-5">
-              <label
-                htmlFor="seller-phone"
-                className="mb-1.75 block text-3.25 font-bold text-[#303631]"
-              >
-                Phone
-              </label>
-              <input
-                type="tel"
-                id="seller-phone"
-                name="seller-phone"
-                placeholder="+358..."
-                className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 placeholder:text-[#9aa09b] focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
-              />
-            </div>
-          </div> */}
-
+          )}
           {/* SUBMIT */}
           <div className="mt-2.5 flex justify-end border-t border-[#e8ebe8] pt-6.25 max-[700px]:justify-stretch">
             <button
