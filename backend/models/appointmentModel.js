@@ -43,8 +43,10 @@ const SIGNUP_ROLES = ['client', 'worker'];
 
 
 
-const getAll = async () => {
-    return await Appointment.find();
+const getAll = async (workerId) => {
+
+    const filter = workerId ? {worker: workerId} : {};
+    return await Appointment.find(filter);
 };
 
 const addOne = async (data) => {

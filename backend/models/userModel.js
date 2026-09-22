@@ -4,13 +4,13 @@ import mongoose from "mongoose";
 //Example model
 /*
 {
-    "full_name": "Mon",
+    "name": "Mon",
     "phone_number": "0123456789",
     "email": "email@example.com",
     "username": "callmemon",
     "password": "1234",
-    "date_of_birth": "2022-02-22"
-    "role": "buyer"
+    "date_of_birth": "2022-02-22",
+    "role": "buyer",
     "account_verified": true,
 }
 */

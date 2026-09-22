@@ -4,13 +4,13 @@ import {
   createNewAppointment,
   findAppointmentById,
   updateAppointmentById,
-  deleteAppointmentById
+  deleteAppointmentById,
 } from "../controllers/appointmentControllers.js";
 
 const AppointmentRouter = express.Router();
 //ROUTES
 
-//GET /appointments
+//GET /appointments or /appointments?worker=<id>
 AppointmentRouter.get("/appointments", getAllAppointment)
 
 //POST /appointments
