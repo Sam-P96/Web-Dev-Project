@@ -9,7 +9,7 @@ const getAllAppointment = async (req, res) => {
     }
 
     try {
-    const getAllResponse = await Appointment.getAll({ worker: workerId});
+    const getAllResponse = await Appointment.getAll(workerId);
     res.json(getAllResponse);
     } catch (err) {
         res.status(500).json({ message: err.message});
