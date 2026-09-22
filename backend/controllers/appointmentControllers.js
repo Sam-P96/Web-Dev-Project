@@ -1,9 +1,20 @@
+import mongoose from "mongoose";
 import * as Appointment from "../models/appointmentModel.js";
 // imports all as Appointment
 
 const getAllAppointment = async (req, res) => {
-    const getAllResponse = await Appointment.getAll()
+    const workerId = req.query.worker;
+    if (workerId && !mongoose.Types.ObjectId.isValid(workerId)) {
+        return res.status(400).json({message: "Invalid worker id"})
+    }
+
+    try {
+    const getAllResponse = await Appointment.getAll(workerId);
     res.json(getAllResponse);
+    } catch (err) {
+        res.status(500).json({ message: err.message});
+    };
+
 };
 
 const createNewAppointment = async (req, res) => {
@@ -57,5 +68,5 @@ export {
   createNewAppointment,
   findAppointmentById,
   updateAppointmentById,
-  deleteAppointmentById
+  deleteAppointmentById,
 };
