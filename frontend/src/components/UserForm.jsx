@@ -2,12 +2,19 @@ import React, { useState } from 'react';
 import { z } from 'zod';
 import { fi } from 'zod/v4/locales';
 
+
+import { registerUser } from '../api/userApi';
+import { useNavigate } from 'react-router-dom';
+
+
 const inputClasses =
   'w-full h-12 p-4 border border-[#d8dcd8] rounded-[7px] outline-none text-sm bg-white focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)]';
 const labelClasses = 'block text-sm font-bold mb-2';
 
 const UserFormSchema = z
+
   .object({
+    
     firstName: z.string().min(3, 'must be at least 3 character'),
     lastName: z.string().min(3, 'must be at least 3 characters'),
     email: z.email('Invalid email'),
@@ -21,11 +28,12 @@ const UserFormSchema = z
   });
 
 export const UserForm = () => {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState('');
 
-  const handleChange = (e) => {
-    const fieldName = e.target.name;
-    const fieldValue = e.target.value;
+  const handleChange = (event) => {
+    const fieldName = event.target.name;
+    const fieldValue = event.target.value;
     const fieldSchema = UserFormSchema.shape[fieldName];
 
     if (fieldSchema) {
@@ -38,15 +46,20 @@ export const UserForm = () => {
       }
     }
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+
+  const handleSubmit = (event) => {
+
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
 
     const values = Object.fromEntries(formData.entries());
 
     const result = UserFormSchema.safeParse(values);
+
     if (!result.success) {
+      
       const errors = z.flattenError(result.error).fieldErrors;
       setErrors({
         firstName: errors.firstName?.[0] || '',
@@ -57,7 +70,26 @@ export const UserForm = () => {
         dob: errors.dob?.[0] || '',
       });
     } else {
-      console.log(result.data);
+      const dataToSend = {
+        name: result.data.firstName + ' ' + result.data.lastName,
+        email: result.data.email,
+        password: result.data.password,
+        phone: values.phone,
+        address: values.address,
+        age: values.age,
+        role: values.role,
+      };
+
+      registerUser(dataToSend)
+        .then((response) => {
+          console.log(response);
+          navigate('/login');
+          
+        })
+        .catch((error) => {
+          console.log(error);
+          alert('Something went wrong');
+        });
     }
   };
 
@@ -211,6 +243,20 @@ export const UserForm = () => {
                 <p className="mt-1 text-xs text-red-500">{errors.dob}</p>
               )}
             </div>
+
+            <div>
+              <label htmlFor="role" className={labelClasses}>
+                Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                className={inputClasses}
+              >
+                <option value="client">Client</option>
+                <option value="worker">Worker</option>
+              </select>
+            </div>
           </div>
           {/* SUBMIT */}
           <div className="flex items-center justify-center p-4">
@@ -228,3 +274,4 @@ export const UserForm = () => {
 };
 
 export default UserForm;
+
