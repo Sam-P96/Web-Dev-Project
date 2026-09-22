@@ -10,6 +10,7 @@ import CreateAccount from './pages/CreateAccount';
 import Navbar from './components/Navbar.jsx';
 import BookingAppointment from './components/BookingAppointment.jsx';
 import WorkerOffers from './pages/WorkerOffers.jsx';
+import SalePage from './components/SalePage.jsx';
 
 function AppPrime() {
   return (
@@ -25,6 +26,7 @@ function AppPrime() {
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/appointment" element={<BookingAppointment />} />
         <Route path="/offers" element={<WorkerOffers />} />
+        <Route path="/car-sale" element={<SalePage />} />
       </Routes>
     </div>
   );

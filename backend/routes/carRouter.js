@@ -7,6 +7,8 @@ import {
   deleteCarById,
 } from '../controllers/carControllers.js';
 
+import upload from '../middleware/uploadMiddleware.js';
+
 const CarRouter = express.Router();
 //ROUTES
 
@@ -14,7 +16,7 @@ const CarRouter = express.Router();
 CarRouter.get('/cars', getAllCar);
 
 //POST /cars
-CarRouter.post('/cars', createNewCar);
+CarRouter.post('/cars', upload.single('carImage'), createNewCar); // route specific middleware
 
 //GET /cars/:carId
 CarRouter.get('/cars/:carId', findCarById);

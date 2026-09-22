@@ -17,10 +17,7 @@ export const createCar = async (carData) => {
   try {
     const res = await fetch(BASE_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(carData),
+      body: carData, // here if the body is passed as json then it wont take multiform data!!!!
     });
     const data = await res.json(); // turn the response text into an object
     // fetch does NOT throw on 400 errors, so we pass res.ok (true for 2xx) to the form

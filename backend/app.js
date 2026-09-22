@@ -1,16 +1,16 @@
-import express from "express";
-import morgan from "morgan";
-import dotenv from "dotenv";
+import express from 'express';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
 // cors = cross origin resource sharing (browser security rule)
-import cors from "cors";
-import connectDB from "./db.js";
-
+import cors from 'cors';
+import connectDB from './db.js';
+import path from 'path';
 
 //ROUTERS
-import userRouter from "./routes/userRouter.js";
-import AppointmentRouter from "./routes/appointmentRouter.js";
-import CarRouter from "./routes/carRouter.js";
-import OfferRouter from "./routes/offerRouter.js";
+import userRouter from './routes/userRouter.js';
+import AppointmentRouter from './routes/appointmentRouter.js';
+import CarRouter from './routes/carRouter.js';
+import OfferRouter from './routes/offerRouter.js';
 
 //load env varaibles
 dotenv.config();
@@ -20,16 +20,16 @@ const app = express();
 app.use(morgan('tiny'));
 app.use(cors());
 
-
 // Middleware to parse JSON
 app.use(express.json());
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'))); //route specific middleware
 
 //ROUTES
-app.use("/", userRouter);
-app.use("/", AppointmentRouter);
-app.use("/", CarRouter);
-app.use("/", OfferRouter);
+app.use('/', userRouter);
+app.use('/', AppointmentRouter);
+app.use('/', CarRouter);
+app.use('/', OfferRouter);
 
 const port = process.env.PORT || 3000;
 

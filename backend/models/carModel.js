@@ -30,6 +30,7 @@ const carSchema = new mongoose.Schema({
   // Does anyone know this?
   // images: [????????????HELP???????????????]
   // CHECK WEB_DEV_SCHOOL_NOTES file on Drive to figure out how to fix this
+  image: { type: String }, // so I added this image here (Aakash)
   estimatedPrice: { type: Number, default: null },
   isVerified: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
 });
@@ -77,6 +78,7 @@ const addOne = async (data) => {
       condition: data.condition,
       description: data.description,
       estimatedPrice: data.estimatedPrice,
+      image: data.image, // image added here as well
     });
     return newCar;
   } catch (err) {
