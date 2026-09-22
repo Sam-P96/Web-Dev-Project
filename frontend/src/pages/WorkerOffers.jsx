@@ -77,6 +77,12 @@ export default function WorkerOffers() {
     console.log(id);
     const updateStatus = await updateCar(id, status);
     console.log(updateStatus);
+    setOffers((prevOffers) =>
+      prevOffers.map((offer) =>
+        offer.id === id ? { ...offer, status: updateCar.isVerified } : offer,
+      ),
+    );
+    setSelectedOffer((prev) => ({ ...prev, status: updateCar.isVerified }));
   };
 
   const filteredOffers = offers.filter((offer) => {
