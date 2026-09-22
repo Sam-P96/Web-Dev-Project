@@ -26,7 +26,13 @@ const CarSchema = z.object({
 
 export const CarForm = () => {
   const [errors, setErrors] = useState({});
+  const [gotEstimate, setGotEstimate] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
+
+  // PLACEHOLDER function for get estimate until we make the Gemini API
+  const handleEstimate = () => {
+    setGotEstimate(3000); // placeholder for now
+  };
 
   const handleChange = (e) => {
     const fieldName = e.target.name;
@@ -41,7 +47,7 @@ export const CarForm = () => {
     }
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const form = e.currentTarget;
@@ -357,20 +363,38 @@ export const CarForm = () => {
               Upload a clear photo of your car.
             </p>
           </div>
-          
+
           {
-          // Recommended by claude when I was debugging
-          submitStatus && (
-            <p
-              className={`mb-4 text-sm font-semibold ${
-                submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
-              }`}
+            // Recommended by claude when I was debugging
+            submitStatus && (
+              <p
+                className={`mb-4 text-sm font-semibold ${submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
+                  }`}
+              >
+                {submitStatus.text}
+              </p>
+            )}
+          <div>
+            {gotEstimate !== null && (
+              <div className="mt-4 rounded-[7px] border border-[#247f3d] bg-[#eef6f0] px-5 py-4">
+                <p className="text-sm text-[#247f3d]">Estimated price</p>
+                <p className="text-2xl font-bold text-[#1b6730]">
+                  €{gotEstimate.toLocaleString()}
+                </p>
+              </div>
+            )}
+          </div>
+          {/* BUTTONS AREA */}
+          <div className="mt-2.5 flex justify-end gap-3 border-t border-[#e8ebe8] pt-6.25 max-[700px]:flex-col max-[700px]:justify-stretch">
+            {/* ESTIMATE BUTTON */}
+            <button
+              type="button"
+              onClick={handleEstimate}
+              className="mr-auto inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730] max-[700px]:mr-0 max-[700px]:w-full max-[700px]:text-center"
             >
-              {submitStatus.text}
-            </p>
-          )}
-          {/* SUBMIT */}
-          <div className="mt-2.5 flex justify-end border-t border-[#e8ebe8] pt-6.25 max-[700px]:justify-stretch">
+              Estimate Price
+            </button>
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               className="inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-3.5 font-bold text-white transition duration-200 hover:bg-[#1b6730] max-[700px]:w-full max-[700px]:text-center"
