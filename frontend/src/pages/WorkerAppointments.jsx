@@ -1,44 +1,150 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useCurrentUser } from '@/lib/useCurrentUser';
 
-const initialAppointments = [
-  {
-    id: 'APT-101',
-    sellerName: 'Mikko',
-    make: 'Mercedes-Benz',
-    model: 'C-Class',
-    year: 2023,
-    date: '2026-09-15',
-    timeSlot: '10:00 AM',
-    status: 'Scheduled'
-  },
-  {
-    id: 'APT-102',
-    sellerName: 'Sanna',
-    make: 'BMW',
-    model: '3 Series',
-    year: 2021,
-    date: '2026-09-16',
-    timeSlot: '02:00 PM',
-    status: 'Completed'
-  },
-  {
-    id: 'APT-103',
-    sellerName: 'Juho',
-    make: 'Audi',
-    model: 'A4',
-    year: 2020,
-    date: '2026-09-17',
-    timeSlot: '11:30 AM',
-    status: 'Cancelled'
-  }
-];
+// const initialAppointments = [
+//   {
+//     id: 'APT-101',
+//     sellerName: 'Mikko',
+//     make: 'Mercedes-Benz',
+//     model: 'C-Class',
+//     year: 2023,
+//     date: '2026-09-15',
+//     timeSlot: '10:00 AM',
+//     status: 'Scheduled'
+//   },
+//   {
+//     id: 'APT-102',
+//     sellerName: 'Sanna',
+//     make: 'BMW',
+//     model: '3 Series',
+//     year: 2021,
+//     date: '2026-09-16',
+//     timeSlot: '02:00 PM',
+//     status: 'Completed'
+//   },
+//   {
+//     id: 'APT-103',
+//     sellerName: 'Juho',
+//     make: 'Audi',
+//     model: 'A4',
+//     year: 2020,
+//     date: '2026-09-17',
+//     timeSlot: '11:30 AM',
+//     status: 'Cancelled'
+//   }
+// ];
+
+const API = import.meta.env.VITE_API_URL;
+
+// Trang thai con "song" -> worker con duoc thao tac
+const isActive = (s) => s === 'booked' || s === 'confirmed';
+
+//ADAPTER
+const pad = (n) => String(n).padStart(2, '0');
+
+// Tach 1 Date ISO thanh 2 field hop voi <input type="date"> va <input type="time">
+const splitDateTime = (iso) => {
+  const d = new Date(iso);
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, // yyyy-mm-dd
+    timeSlot: `${pad(d.getHours())}:${pad(d.getMinutes())}`,                  // HH:mm
+  };
+};
+
+const toRow = (a) => {
+  return {
+    id: a._id,
+    sellerName: a.seller?.name ?? '—',
+    make: a.car?.make ?? '',
+    model: a.car?.model ?? '',
+    year: a.car?.year ?? '',
+    ...splitDateTime(a.scheduledAt),
+    status: a.status,
+  };
+};
+
+// PUT tra ve document KHONG populate (findByIdAndUpdate) nen chi merge field thay doi,
+// giu lai sellerName / car cua dong cu.
+const mergeRow = (row, updated) => ({
+  ...row,
+  ...splitDateTime(updated.scheduledAt),
+  status: updated.status,
+});
+
 
 export default function WorkerAppointments() {
-  const [appointments, setAppointments] = useState(initialAppointments);
+
+  const {_id: workerId} = useCurrentUser();
+
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!workerId) {
+      setLoading(false);
+      return
+
+    }   
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(
+          `${API}/appointments?worker=${workerId}`,
+          { signal: ctrl.signal }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        setAppointments(data.map(toRow));
+      } catch (e) {
+        if (e.name !== 'AbortError') setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => ctrl.abort();
+  }, [workerId]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAptId, setSelectedAptId] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
+
+  // id cua dong dang goi PUT -> de disable nut, tranh double click
+  const [savingId, setSavingId] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  // PUT /appointments/:id , body chi chua field can doi
+  const patchAppointment = async (id, body) => {
+    setSavingId(id);
+    setActionError(null);
+    try {
+      const res = await fetch(`${API}/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.message ?? `HTTP ${res.status}`);
+      }
+
+      const updated = await res.json();
+      setAppointments((prev) =>
+        prev.map((apt) => (apt.id === id ? mergeRow(apt, updated) : apt))
+      );
+      return true;
+    } catch (e) {
+      setActionError(e.message);
+      return false;
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   const openRescheduleModal = (apt) => {
     setSelectedAptId(apt.id);
@@ -50,39 +156,48 @@ export default function WorkerAppointments() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedAptId('');
+    setActionError(null);
   };
 
-  const handleSaveReschedule = () => {
-    const updatedList = appointments.map((apt) => {
-      if (apt.id === selectedAptId) {
-        return {
-          ...apt,
-          date: newDate,
-          timeSlot: newTime,
-          status: 'Scheduled'
-        };
-      }
-      return apt;
+  const handleSaveReschedule = async () => {
+    if (!newDate || !newTime) {
+      setActionError('Vui long chon ca ngay va gio');
+      return;
+    }
+
+    // `${yyyy-mm-dd}T${HH:mm}` khong co Z -> parse theo gio dia phuong,
+    // khop voi cach splitDateTime doc nguoc lai
+    const scheduledAt = new Date(`${newDate}T${newTime}`);
+    if (Number.isNaN(scheduledAt.getTime())) {
+      setActionError('Ngay gio khong hop le');
+      return;
+    }
+
+    const ok = await patchAppointment(selectedAptId, {
+      scheduledAt: scheduledAt.toISOString(),
     });
 
-    setAppointments(updatedList);
-    closeModal();
+    if (ok) closeModal();
   };
 
   const handleStatusChange = (id, newStatus) => {
-    const updatedList = appointments.map((apt) => {
-      if (apt.id === id) {
-        return { ...apt, status: newStatus };
-      }
-      return apt;
-    });
-
-    setAppointments(updatedList);
+    return patchAppointment(id, { status: newStatus });
   };
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Worker Appointments</h1>
+
+      {loading && <p className="mb-3 text-sm text-gray-500">Loading…</p>}
+      {error && (
+        <p className="mb-3 text-sm text-red-600">Lỗi tải dữ liệu: {error}</p>
+      )}
+      {actionError && !isModalOpen && (
+        <p className="mb-3 text-sm text-red-600">Cập nhật thất bại: {actionError}</p>
+      )}
+      {!loading && !error && appointments.length === 0 && (
+        <p className="mb-3 text-sm text-gray-500">Chưa có lịch hẹn nào.</p>
+      )}
 
       <div className="bg-white border rounded-lg overflow-x-auto shadow-sm">
         <table className="w-full text-left border-collapse">
@@ -97,7 +212,11 @@ export default function WorkerAppointments() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {appointments.map((apt) => (
+            {appointments.map((apt) => {
+              const busy = savingId === apt.id;
+              const locked = !isActive(apt.status) || busy;
+
+              return (
               <tr key={apt.id} className="hover:bg-gray-50">
                 <td className="p-3 font-mono">{apt.id}</td>
                 <td className="p-3 font-medium">
@@ -109,10 +228,10 @@ export default function WorkerAppointments() {
                 </td>
                 <td className="p-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      apt.status === 'Scheduled'
+                    className={`px-2 py-1 rounded-full text-xs font-semibold capitalize ${
+                      isActive(apt.status)
                         ? 'bg-blue-100 text-blue-800'
-                        : apt.status === 'Completed'
+                        : apt.status === 'completed'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}
@@ -123,9 +242,9 @@ export default function WorkerAppointments() {
                 <td className="p-3 text-right space-x-2">
                   <button
                     onClick={() => openRescheduleModal(apt)}
-                    disabled={apt.status !== 'Scheduled'}
+                    disabled={locked}
                     className={`px-3 py-1 text-xs rounded font-medium ${
-                      apt.status !== 'Scheduled'
+                      locked
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-yellow-500 text-white hover:bg-yellow-600'
                     }`}
@@ -134,22 +253,22 @@ export default function WorkerAppointments() {
                   </button>
 
                   <button
-                    onClick={() => handleStatusChange(apt.id, 'Completed')}
-                    disabled={apt.status !== 'Scheduled'}
+                    onClick={() => handleStatusChange(apt.id, 'completed')}
+                    disabled={locked}
                     className={`px-3 py-1 text-xs rounded font-medium ${
-                      apt.status !== 'Scheduled'
+                      locked
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
                   >
-                    Complete
+                    {busy ? 'Saving…' : 'Complete'}
                   </button>
 
                   <button
-                    onClick={() => handleStatusChange(apt.id, 'Cancelled')}
-                    disabled={apt.status !== 'Scheduled'}
+                    onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                    disabled={locked}
                     className={`px-3 py-1 text-xs rounded font-medium ${
-                      apt.status !== 'Scheduled'
+                      locked
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-red-600 text-white hover:bg-red-700'
                     }`}
@@ -158,7 +277,8 @@ export default function WorkerAppointments() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -184,26 +304,31 @@ export default function WorkerAppointments() {
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">New Time Slot</label>
               <input
-                type="text"
+                type="time"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
                 className="w-full border p-2 rounded text-sm"
-                placeholder="e.g. 03:00 PM"
               />
             </div>
+
+            {actionError && (
+              <p className="mb-2 text-sm text-red-600">{actionError}</p>
+            )}
 
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                disabled={savingId === selectedAptId}
+                className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveReschedule}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled={savingId === selectedAptId}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
-                Save Changes
+                {savingId === selectedAptId ? 'Saving…' : 'Save Changes'}
               </button>
             </div>
           </div>
