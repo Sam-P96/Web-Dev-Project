@@ -25,22 +25,6 @@ const LoginForm = () => {
         setErrors((prev) => ({ ...prev, [fieldName]: '' }));
       }
     }
-    // console.log(fieldSchema);
-
-    // const validate = LoginSchema.safeParse(field);
-    // console.log(field);
-    // console.log(validate);
-    // if (!validate.success) {
-    //   const flattened = z.flattenError(validate.error);
-    //   const fieldErrors = flattened.fieldErrors;
-    //   // console.log(flattened);
-    //   // console.log(fieldErrors);
-    //   setErrors({
-    //     field: fieldErrors.field ? fieldErrors.field[0] : '',
-    //   });
-    // } else {
-    //   setErrors({});
-    // }
   };
 
   const handleSubmit = (e) => {

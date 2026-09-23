@@ -254,7 +254,6 @@ export const UserForm = () => {
                 className={inputClasses}
               >
                 <option value="client">Client</option>
-                <option value="worker">Worker</option>
               </select>
             </div>
           </div>
