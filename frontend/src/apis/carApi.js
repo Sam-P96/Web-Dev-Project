@@ -1,10 +1,12 @@
 //This is car api.js
 
-const BASE_URL = 'http://localhost:3000/cars';
+// const BASE_URL = 'http://localhost:3000/cars';
+const API = import.meta.env.VITE_API_URL;
+
 
 export const getAllCars = async () => {
   try {
-    const res = await fetch(`${BASE_URL}`);
+    const res = await fetch(`${API}/cars`);
     const data = await res.json();
     console.log(data);
     return data;
@@ -15,7 +17,7 @@ export const getAllCars = async () => {
 
 export const createCar = async (carData) => {
   try {
-    const res = await fetch(BASE_URL, {
+    const res = await fetch(`${API}/cars`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -35,7 +37,7 @@ export const createCar = async (carData) => {
 
 export const updateCar = async (id, status) => {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
+    const res = await fetch(`${API}/cars/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

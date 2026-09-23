@@ -11,26 +11,6 @@ import { useCurrentUser } from '@/lib/useCurrentUser';
 //     date: '2026-09-15',
 //     timeSlot: '10:00 AM',
 //     status: 'Scheduled'
-//   },
-//   {
-//     id: 'APT-102',
-//     sellerName: 'Sanna',
-//     make: 'BMW',
-//     model: '3 Series',
-//     year: 2021,
-//     date: '2026-09-16',
-//     timeSlot: '02:00 PM',
-//     status: 'Completed'
-//   },
-//   {
-//     id: 'APT-103',
-//     sellerName: 'Juho',
-//     make: 'Audi',
-//     model: 'A4',
-//     year: 2020,
-//     date: '2026-09-17',
-//     timeSlot: '11:30 AM',
-//     status: 'Cancelled'
 //   }
 // ];
 
