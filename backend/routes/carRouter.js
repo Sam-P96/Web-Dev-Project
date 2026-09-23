@@ -11,18 +11,18 @@ const CarRouter = express.Router();
 //ROUTES
 
 //GET /cars
-CarRouter.get('/cars', getAllCar);
+CarRouter.get('/', getAllCar);
 
 //POST /cars
-CarRouter.post('/cars', createNewCar);
+CarRouter.post('/', createNewCar);
 
 //GET /cars/:carId
-CarRouter.get('/cars/:carId', findCarById);
+CarRouter.get('/:carId', findCarById);
 
 //PUT /cars/:carId
-CarRouter.put('/cars/:carId', updateCarById);
+CarRouter.put('/:carId', updateCarById);
 
 //DELETE /cars/:carId
-CarRouter.delete('/cars/:carId', deleteCarById);
+CarRouter.delete('/:carId', deleteCarById);
 
 export default CarRouter;

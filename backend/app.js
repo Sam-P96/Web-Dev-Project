@@ -26,10 +26,10 @@ app.use(express.json());
 
 
 //ROUTES
-app.use("/", userRouter);
-app.use("/", AppointmentRouter);
-app.use("/", CarRouter);
-app.use("/", OfferRouter);
+app.use("/api/users", userRouter);
+app.use("/api/appointments", AppointmentRouter);
+app.use("/api/cars", CarRouter);
+app.use("/api/offers", OfferRouter);
 
 const port = process.env.PORT || 3000;
 

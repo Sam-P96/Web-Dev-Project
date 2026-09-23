@@ -11,18 +11,18 @@ const AppointmentRouter = express.Router();
 //ROUTES
 
 //GET /appointments or /appointments?worker=<id>
-AppointmentRouter.get("/appointments", getAllAppointment)
+AppointmentRouter.get("/", getAllAppointment)
 
 //POST /appointments
-AppointmentRouter.post("/appointments", createNewAppointment)
+AppointmentRouter.post("/", createNewAppointment)
 
 //GET /appointments/:appointmentId
-AppointmentRouter.get("/appointments/:appointmentId", findAppointmentById)
+AppointmentRouter.get("/:appointmentId", findAppointmentById)
 
 //PUT /appointments/:appointmentId
-AppointmentRouter.put("/appointments/:appointmentId", updateAppointmentById)
+AppointmentRouter.put("/:appointmentId", updateAppointmentById)
 
 //DELETE /appointments/:appointmentId
-AppointmentRouter.delete("/appointments/:appointmentId",deleteAppointmentById)
+AppointmentRouter.delete("/:appointmentId",deleteAppointmentById)
 
 export default AppointmentRouter;

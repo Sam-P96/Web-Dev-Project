@@ -11,18 +11,18 @@ const UserRouter = express.Router();
 //ROUTES
 
 //GET /users
-UserRouter.get("/users", getAllUser)
+UserRouter.get("/", getAllUser)
 
 //POST /users
-UserRouter.post("/users", createNewUser)
+UserRouter.post("/", createNewUser)
 
 //GET /users/:userId
-UserRouter.get("/users/:userId", findUserById)
+UserRouter.get("/:userId", findUserById)
 
 //PUT /users/:userId
-UserRouter.put("/users/:userId", updateUserById)
+UserRouter.put("/:userId", updateUserById)
 
 //DELETE /users/:userId
-UserRouter.delete("/users/:userId",deleteUserById)
+UserRouter.delete("/:userId",deleteUserById)
 
 export default UserRouter;
