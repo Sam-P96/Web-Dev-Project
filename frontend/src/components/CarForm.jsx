@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { z } from 'zod';
 import { createCar } from '../apis/carApi';
+import { estimatePrice } from '../apis/estimateApi';
+import PriceEstimateDisplay from './PriceEstimateDisplay';
 
 // PLACE HODLER CLIENT ID
 const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3"
 
+// I dont remember doing this, I assume it was fe people. 
 const CarSchema = z.object({
   make: z.string().min(1, 'please select one'),
   model: z.string().min(2, 'please enter the model'),
@@ -14,7 +17,7 @@ const CarSchema = z.object({
   transmission: z.string().min(1, 'please select one'),
   price: z.coerce.number().min(1000, "don't hesitate, we will do the rest"),
   condition: z.string().min(1, 'please select one'),
-  // TODO: ADD CAR IMAGE FOR LATER ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️Aakash over here!!! Or i can cover this, idk.⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+  // TODO: ADD CAR IMAGE FOR LATER ⚠️ Aakash over here!!! Or i can cover this, idk.
   // carImage: z
   //   .custom((file) => file instanceof File && file.size > 0, {
   //     message: 'please select an image',
@@ -24,14 +27,63 @@ const CarSchema = z.object({
   //   }),
 });
 
+// Had claude help me with this, but it looks fine. 
+const EstimateSchema = CarSchema.pick({
+  make: true,
+  model: true,
+  year: true,
+  mileage: true,
+  fuel: true,
+  transmission: true,
+  condition: true,
+});
+
 export const CarForm = () => {
   const [errors, setErrors] = useState({});
   const [gotEstimate, setGotEstimate] = useState(null);
+  const [estimateLoading, setEstimateLoading] = useState(false);
+  const [estimateError, setEstimateError] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
 
-  // PLACEHOLDER function for get estimate until we make the Gemini API
-  const handleEstimate = () => {
-    setGotEstimate(3000); // placeholder for now
+  const formRef = useRef(null);
+
+  const handleEstimate = async () => {
+    const formData = new FormData(formRef.current);
+    const values = Object.fromEntries(formData.entries());
+
+    const validate = EstimateSchema.safeParse(values);
+
+    if (!validate.success) {
+      setErrors(z.flattenError(validate.error).fieldErrors);
+      setEstimateError('Please fill in the car details above first.');
+      setGotEstimate(null);
+      return;
+    }
+
+    setErrors({});
+    setEstimateError(null);
+    setGotEstimate(null);
+    setEstimateLoading(true);
+
+    const result = await estimatePrice({
+      make: validate.data.make,
+      model: validate.data.model,
+      year: validate.data.year,
+      mileage: validate.data.mileage,
+      fuel: validate.data.fuel,
+      transmission: validate.data.transmission,
+      condition: validate.data.condition,
+      location: values.location,
+      description: values.description,
+    });
+
+    setEstimateLoading(false);
+
+    if (result.ok) {
+      setGotEstimate(result.data);
+    } else {
+      setEstimateError(result.data.message || 'Could not get an estimate. Please try again.');
+    }
   };
 
   const handleChange = (e) => {
@@ -57,7 +109,7 @@ export const CarForm = () => {
     const validate = CarSchema.safeParse(values);
 
     if (!validate.success) {
-      // man, idk who made this, but what is this? 
+      // man, idk who made this, but what is this?
       const errors = z.flattenError(validate.error).fieldErrors;
       setErrors(errors);
       return;
@@ -84,6 +136,8 @@ export const CarForm = () => {
     if (result.ok) {
       setSubmitStatus({ type: 'success', text: 'Your car has been listed!' });
       form.reset();
+      setGotEstimate(null);
+      setEstimateError(null);
     } else {
       setSubmitStatus({ type: 'error', text: result.data.message });
     }
@@ -93,6 +147,7 @@ export const CarForm = () => {
     <div>
       <main className="min-h-162.5 bg-[#f5f6f4] px-5 py-13.75 pb-20 max-[700px]:px-3.75 max-[700px]:py-8.75 max-[700px]:pb-15">
         <form
+          ref={formRef}
           className="mx-auto w-full max-w-250 rounded-[14px] border border-[#e3e6e2] bg-white p-10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] max-[700px]:rounded-[11px] max-[700px]:px-5 max-[700px]:py-6.25"
           onSubmit={handleSubmit}
         >
@@ -182,6 +237,12 @@ export const CarForm = () => {
                 <option>2017</option>
                 <option>2016</option>
                 <option>2015</option>
+                <option>2014</option>
+                <option>2013</option>
+                <option>2012</option>
+                <option>2011</option>
+                <option>2010</option>
+                <option>2009</option>
               </select>
               {errors.year && (
                 <p className="mt-1 text-xs text-red-500">{errors.year}</p>
@@ -374,25 +435,24 @@ export const CarForm = () => {
                 {submitStatus.text}
               </p>
             )}
-          <div>
-            {gotEstimate !== null && (
-              <div className="mt-4 rounded-[7px] border border-[#247f3d] bg-[#eef6f0] px-5 py-4">
-                <p className="text-sm text-[#247f3d]">Estimated price</p>
-                <p className="text-2xl font-bold text-[#1b6730]">
-                  €{gotEstimate.toLocaleString()}
-                </p>
-              </div>
-            )}
-          </div>
+
+          {/* AI PRICE ESTIMATE */}
+          <PriceEstimateDisplay
+            estimate={gotEstimate}
+            loading={estimateLoading}
+            error={estimateError}
+          />
+
           {/* BUTTONS AREA */}
           <div className="mt-2.5 flex justify-end gap-3 border-t border-[#e8ebe8] pt-6.25 max-[700px]:flex-col max-[700px]:justify-stretch">
             {/* ESTIMATE BUTTON */}
             <button
               type="button"
               onClick={handleEstimate}
-              className="mr-auto inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730] max-[700px]:mr-0 max-[700px]:w-full max-[700px]:text-center"
+              disabled={estimateLoading}
+              className="mr-auto inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730] disabled:cursor-not-allowed disabled:opacity-60 max-[700px]:mr-0 max-[700px]:w-full max-[700px]:text-center"
             >
-              Estimate Price
+              {estimateLoading ? 'Estimating…' : 'Estimate Price'}
             </button>
             {/* SUBMIT BUTTON */}
             <button
