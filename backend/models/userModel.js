@@ -114,7 +114,7 @@ const updateById = async (id, updatedData) => {
 
     try {
         const user = await User.findByIdAndUpdate(id, allowed, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true
         });
         return user ?? false;

@@ -95,7 +95,7 @@ const updateById = async (id, updatedData) => {
     });
 
     const appointment = await Appointment.findByIdAndUpdate(id, allowed, {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
     });
 

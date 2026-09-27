@@ -14,7 +14,8 @@ import OfferRouter from "./routes/offerRouter.js";
 // so tests can import it with Supertest. Server start lives in index.js.
 const app = express();
 
-app.use(morgan('tiny'));
+// Request log is noise in test output
+if (process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
 app.use(cors());
 
 
