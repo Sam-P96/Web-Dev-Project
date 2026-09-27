@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCurrentUser } from '@/lib/useCurrentUser';
+import { getAppointmentsByWorker, updateAppointment } from '@/api/appointmentApi';
+import { errorMessage } from '@/api/client';
 
 // const initialAppointments = [
 //   {
@@ -13,8 +15,6 @@ import { useCurrentUser } from '@/lib/useCurrentUser';
 //     status: 'Scheduled'
 //   }
 // ];
-
-const API = import.meta.env.VITE_API_URL;
 
 // Trang thai con "song" -> worker con duoc thao tac
 const isActive = (s) => s === 'booked' || s === 'confirmed';
@@ -71,13 +71,11 @@ export default function WorkerAppointments() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(
-          `${API}/appointments?worker=${workerId}`,
-          { signal: ctrl.signal }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { ok, status, data } = await getAppointmentsByWorker(workerId, {
+          signal: ctrl.signal,
+        });
+        if (!ok) throw new Error(errorMessage(data, `HTTP ${status}`));
 
-        const data = await res.json();
         setAppointments(data.map(toRow));
       } catch (e) {
         if (e.name !== 'AbortError') setError(e.message);
@@ -102,18 +100,9 @@ export default function WorkerAppointments() {
     setSavingId(id);
     setActionError(null);
     try {
-      const res = await fetch(`${API}/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const { ok, status, data: updated } = await updateAppointment(id, body);
+      if (!ok) throw new Error(errorMessage(updated, `HTTP ${status}`));
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        throw new Error(payload?.message ?? `HTTP ${res.status}`);
-      }
-
-      const updated = await res.json();
       setAppointments((prev) =>
         prev.map((apt) => (apt.id === id ? mergeRow(apt, updated) : apt))
       );

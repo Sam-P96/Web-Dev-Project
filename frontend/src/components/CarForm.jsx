@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
-import { createCar } from '../apis/carApi';
+import { createCar } from '../api/carApi';
+import { errorMessage } from '../api/client';
 
 // PLACE HODLER CLIENT ID
 const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3"
@@ -79,7 +80,7 @@ export const CarForm = () => {
       setSubmitStatus({ type: 'success', text: 'Your car has been listed!' });
       form.reset();
     } else {
-      setSubmitStatus({ type: 'error', text: result.data.message });
+      setSubmitStatus({ type: 'error', text: errorMessage(result.data) });
     }
   };
 

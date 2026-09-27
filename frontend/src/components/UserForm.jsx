@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { fi } from 'zod/v4/locales';
 
 
-import { registerUser } from '../api/userApi';
+import { signup } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -80,7 +80,7 @@ export const UserForm = () => {
         role: values.role,
       };
 
-      registerUser(dataToSend)
+      signup(dataToSend)
         .then((response) => {
           console.log(response);
           navigate('/login');
