@@ -1,7 +1,9 @@
 // One place for every backend call: base URL + JSON + JWT token + 401 handling.
 // Pages/components should call the *Api.js helpers, not fetch() directly.
 
-const API = import.meta.env.VITE_API_URL;
+// Dev: '/api' goes through the Vite proxy (vite.config.js).
+// Deploy (frontend and backend on different hosts): set VITE_API_URL at build time.
+const API = import.meta.env.VITE_API_URL || '/api';
 
 // localStorage "user" = { _id, email, name, role, token } (saved after signup/login)
 export const getStoredUser = () => {

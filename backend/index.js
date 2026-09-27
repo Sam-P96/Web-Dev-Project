@@ -4,7 +4,7 @@ import connectDB from "./db.js";
 
 await connectDB();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 //Start the server
 app.listen(port, () => {
