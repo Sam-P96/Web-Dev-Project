@@ -6,8 +6,13 @@ import {
   updateOfferById,
   deleteOfferById
 } from "../controllers/offerControllers.js";
+import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
 const OfferRouter = express.Router();
+
+// Offers are staff-only
+OfferRouter.use(requireAuth, requireRole("worker", "admin"))
+
 //ROUTES
 
 //GET /offers

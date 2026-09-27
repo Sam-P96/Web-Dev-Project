@@ -6,8 +6,13 @@ import {
   updateAppointmentById,
   deleteAppointmentById,
 } from "../controllers/appointmentControllers.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const AppointmentRouter = express.Router();
+
+// All appointment routes need a logged-in user
+AppointmentRouter.use(requireAuth)
+
 //ROUTES
 
 //GET /appointments or /appointments?worker=<id>

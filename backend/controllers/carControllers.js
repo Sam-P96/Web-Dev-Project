@@ -7,7 +7,8 @@ const getAllCar = async (req, res) => {
 };
 
 const createNewCar = async (req, res) => {
-    const data = req.body
+    // Owner comes from the token, never from req.body (can't create cars for someone else)
+    const data = { ...req.body, client: req.user._id }
     
     const newCar = await Car.addOne(data)
 
