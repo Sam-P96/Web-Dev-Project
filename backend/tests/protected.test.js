@@ -31,6 +31,14 @@ describe("/api/cars", () => {
   });
 });
 
+describe("error response format", () => {
+  it("uses { error } for not-found responses", async () => {
+    const missingId = "0123456789abcdef01234567";
+    const res = await api.get(`/api/cars/${missingId}`).expect(404);
+    expect(res.body).toEqual({ error: "Car not found" });
+  });
+});
+
 describe("/api/appointments", () => {
   it("returns 401 without a token", async () => {
     await api.get("/api/appointments").expect(401);

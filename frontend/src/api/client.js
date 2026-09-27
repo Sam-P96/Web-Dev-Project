@@ -51,6 +51,6 @@ export async function apiFetch(path, { body, headers, ...options } = {}) {
   return { ok: res.ok, status: res.status, data };
 }
 
-// Backend is mid-migration from { message } to { error }: read both
+// Backend error responses are always { error: "..." }
 export const errorMessage = (data, fallback = 'Something went wrong') =>
-  data?.error ?? data?.message ?? fallback;
+  data?.error ?? fallback;

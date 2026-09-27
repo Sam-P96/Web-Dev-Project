@@ -16,13 +16,13 @@ import { errorMessage } from '@/api/client';
 //   }
 // ];
 
-// Trang thai con "song" -> worker con duoc thao tac
+// Appointment is still "active" -> the worker can still act on it
 const isActive = (s) => s === 'booked' || s === 'confirmed';
 
 //ADAPTER
 const pad = (n) => String(n).padStart(2, '0');
 
-// Tach 1 Date ISO thanh 2 field hop voi <input type="date"> va <input type="time">
+// Split an ISO date into the 2 fields used by <input type="date"> and <input type="time">
 const splitDateTime = (iso) => {
   const d = new Date(iso);
   return {
@@ -43,8 +43,8 @@ const toRow = (a) => {
   };
 };
 
-// PUT tra ve document KHONG populate (findByIdAndUpdate) nen chi merge field thay doi,
-// giu lai sellerName / car cua dong cu.
+// PUT returns an UNPOPULATED document (findByIdAndUpdate), so only merge the changed fields
+// and keep sellerName / car from the existing row.
 const mergeRow = (row, updated) => ({
   ...row,
   ...splitDateTime(updated.scheduledAt),
@@ -92,11 +92,11 @@ export default function WorkerAppointments() {
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
 
-  // id cua dong dang goi PUT -> de disable nut, tranh double click
+  // id of the row being saved -> disable its buttons to prevent double clicks
   const [savingId, setSavingId] = useState(null);
   const [actionError, setActionError] = useState(null);
 
-  // PUT /appointments/:id , body chi chua field can doi
+  // PUT /appointments/:id, body only contains the fields to change
   const patchAppointment = async (id, body) => {
     setSavingId(id);
     setActionError(null);
@@ -131,15 +131,15 @@ export default function WorkerAppointments() {
 
   const handleSaveReschedule = async () => {
     if (!newDate || !newTime) {
-      setActionError('Vui long chon ca ngay va gio');
+      setActionError('Please choose both a date and a time');
       return;
     }
 
-    // `${yyyy-mm-dd}T${HH:mm}` khong co Z -> parse theo gio dia phuong,
-    // khop voi cach splitDateTime doc nguoc lai
+    // `${yyyy-mm-dd}T${HH:mm}` has no Z -> parsed as local time,
+    // matching how splitDateTime reads it back
     const scheduledAt = new Date(`${newDate}T${newTime}`);
     if (Number.isNaN(scheduledAt.getTime())) {
-      setActionError('Ngay gio khong hop le');
+      setActionError('Invalid date or time');
       return;
     }
 
@@ -160,13 +160,13 @@ export default function WorkerAppointments() {
 
       {loading && <p className="mb-3 text-sm text-gray-500">Loading…</p>}
       {error && (
-        <p className="mb-3 text-sm text-red-600">Lỗi tải dữ liệu: {error}</p>
+        <p className="mb-3 text-sm text-red-600">Failed to load appointments: {error}</p>
       )}
       {actionError && !isModalOpen && (
-        <p className="mb-3 text-sm text-red-600">Cập nhật thất bại: {actionError}</p>
+        <p className="mb-3 text-sm text-red-600">Update failed: {actionError}</p>
       )}
       {!loading && !error && appointments.length === 0 && (
-        <p className="mb-3 text-sm text-gray-500">Chưa có lịch hẹn nào.</p>
+        <p className="mb-3 text-sm text-gray-500">No appointments yet.</p>
       )}
 
       <div className="bg-white border rounded-lg overflow-x-auto shadow-sm">

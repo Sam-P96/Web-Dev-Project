@@ -13,7 +13,7 @@ const createNewCar = async (req, res) => {
     const newCar = await Car.addOne(data)
 
     if (newCar.error) {
-        res.status(400).json({message: newCar.error });
+        res.status(400).json({ error: newCar.error });
     } else {
         res.status(201).json(newCar);
     }
@@ -23,7 +23,7 @@ const findCarById = async (req, res) => {
     const carId = req.params.carId;
     const car = await Car.findById(carId);
 
-    if (!car) res.status(404).json({message: "Car not found"});
+    if (!car) res.status(404).json({ error: "Car not found"});
     else res.json(car); 
 };
 
@@ -32,7 +32,7 @@ const updateCarById = async (req, res) => {
     const car = await Car.findById(carId);
     const updatedData = req.body;
 
-    if(!car) res.status(404).json({message: "Car not found"});
+    if(!car) res.status(404).json({ error: "Car not found"});
     
     else {
         const  updatedCar = await Car.updateById(carId, updatedData);
@@ -44,12 +44,12 @@ const deleteCarById = async (req, res) => {
     const carId = req.params.carId;
     const car = await Car.findById(carId);
 
-    if (!car) res.status(404).json({message: "Car not found "})
+    if (!car) res.status(404).json({ error: "Car not found"})
     
     else {
         const isDeleted = await Car.deleteById(carId);
         if (isDeleted) res.status(200).json({message: "Delete car successfully"})
-        else res.status(500).json({message: "Delete failed"}); 
+        else res.status(500).json({ error: "Delete failed"}); 
     }
 }
 
