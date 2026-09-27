@@ -1,9 +1,7 @@
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 // cors = cross origin resource sharing (browser security rule)
 import cors from "cors";
-import connectDB from "./db.js";
 
 
 //ROUTERS
@@ -12,9 +10,8 @@ import AppointmentRouter from "./routes/appointmentRouter.js";
 import CarRouter from "./routes/carRouter.js";
 import OfferRouter from "./routes/offerRouter.js";
 
-//load env varaibles
-dotenv.config();
-await connectDB();
+// app.js only builds the Express app (no DB connect, no listen)
+// so tests can import it with Supertest. Server start lives in index.js.
 const app = express();
 
 app.use(morgan('tiny'));
@@ -31,9 +28,4 @@ app.use("/api/appointments", AppointmentRouter);
 app.use("/api/cars", CarRouter);
 app.use("/api/offers", OfferRouter);
 
-const port = process.env.PORT || 3000;
-
-//Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+export default app;
