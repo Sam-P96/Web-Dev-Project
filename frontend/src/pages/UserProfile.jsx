@@ -1,23 +1,75 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getMe } from '@/api/authApi';
+import { updateUser } from '@/api/userApi';
+import { errorMessage } from '@/api/client';
+import { useAuth } from '@/context/authContext';
+
+const EMPTY = { fullName: '', email: '', phone: '', address: '', role: '' };
+
+// API user -> form fields
+const toForm = (u) => ({
+  fullName: u.name ?? '',
+  email: u.email ?? '',
+  phone: u.phone ?? '',
+  address: u.address ?? '',
+  role: u.role ?? '',
+});
 
 export default function UserProfile() {
+  const { user, saveUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
-  const [userInfo, setUserInfo] = useState({
-    fullName: 'Ridhi  ',
-    email: 'ridhi@autotori.fi',
-    phone: '+358 234 567 890',
-    address: 'tulkinkuja 3, espoo, finland',
-    role: 'Seller / Worker',
-  });
+  const [userInfo, setUserInfo] = useState(EMPTY);
+  // Last saved values, restored on "Cancel Edit"
+  const [savedInfo, setSavedInfo] = useState(EMPTY);
+  const [status, setStatus] = useState(null); // { type: 'error' | 'success', text }
+
+  useEffect(() => {
+    let ignore = false;
+    getMe().then(({ ok, data }) => {
+      if (ignore) return;
+      if (!ok) {
+        setStatus({ type: 'error', text: errorMessage(data, 'Could not load profile') });
+        return;
+      }
+      setUserInfo(toForm(data));
+      setSavedInfo(toForm(data));
+    });
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleChange = (e) => {
     setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
   };
 
-  const handleSave = (e) => {
+  const toggleEdit = () => {
+    if (isEditing) setUserInfo(savedInfo); // cancel -> discard changes
+    setStatus(null);
+    setIsEditing(!isEditing);
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
 
+    const { ok, data } = await updateUser(user._id, {
+      name: userInfo.fullName,
+      email: userInfo.email,
+      phone: userInfo.phone,
+      address: userInfo.address,
+    });
+
+    if (!ok) {
+      setStatus({ type: 'error', text: errorMessage(data, 'Could not save changes') });
+      return;
+    }
+
+    setUserInfo(toForm(data));
+    setSavedInfo(toForm(data));
+    // Keep the token, refresh name/email shown in the Navbar
+    saveUser({ ...user, name: data.name, email: data.email });
+    setStatus({ type: 'success', text: 'Profile updated' });
     setIsEditing(false);
   };
 
@@ -35,12 +87,20 @@ export default function UserProfile() {
           </div>
 
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={toggleEdit}
             className="bg-[#247f3d] hover:bg-[#1b6730] text-white text-sm font-bold px-4 py-2.5 rounded-[7px] transition"
           >
             {isEditing ? 'Cancel Edit' : 'Edit Profile'}
           </button>
         </div>
+
+        {status && (
+          <p
+            className={`text-sm font-semibold ${status.type === 'error' ? 'text-red-500' : 'text-[#2f9449]'}`}
+          >
+            {status.text}
+          </p>
+        )}
 
         {/* PROFILE FORM */}
         <div className="bg-white rounded-xl border border-[#d8dcd8] shadow-sm p-6">

@@ -3,9 +3,6 @@ import { z } from 'zod';
 import { createCar } from '../api/carApi';
 import { errorMessage } from '../api/client';
 
-// PLACE HODLER CLIENT ID
-const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3"
-
 const CarSchema = z.object({
   make: z.string().min(1, 'please select one'),
   model: z.string().min(2, 'please enter the model'),
@@ -61,7 +58,7 @@ export const CarForm = () => {
     console.log(values);
 
     const carData = {
-      client: PLACEHOLDER_CLIENT_ID,
+      // no `client`: the server sets the owner from the login token
       make: validate.data.make,
       model: validate.data.model,
       year: Number(validate.data.year),

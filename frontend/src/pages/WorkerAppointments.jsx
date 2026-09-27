@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useCurrentUser } from '@/lib/useCurrentUser';
+import { useAuth } from '@/context/authContext';
 import { getAppointmentsByWorker, updateAppointment } from '@/api/appointmentApi';
 import { errorMessage } from '@/api/client';
 
@@ -54,7 +54,8 @@ const mergeRow = (row, updated) => ({
 
 export default function WorkerAppointments() {
 
-  const {_id: workerId} = useCurrentUser();
+  // Route is staff-only (RequireAuth), so user is always set here
+  const workerId = useAuth().user._id;
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);

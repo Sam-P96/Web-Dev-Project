@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { login } from '../api/authApi';
+import { errorMessage } from '../api/client';
+import { useAuth } from '../context/authContext';
 
 const LoginSchema = z.object({
   email: z.email('Invalid email address'),
@@ -9,6 +12,11 @@ const LoginSchema = z.object({
 
 const LoginForm = () => {
   const [errors, setErrors] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { saveUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     const fieldName = e.target.name;
@@ -27,7 +35,7 @@ const LoginForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
@@ -44,7 +52,20 @@ const LoginForm = () => {
       });
       return;
     }
-    console.log('sending to server:', validate.data);
+
+    setSubmitting(true);
+    setSubmitError('');
+    const { ok, data } = await login(validate.data.email, validate.data.password);
+    setSubmitting(false);
+
+    if (!ok) {
+      setSubmitError(errorMessage(data));
+      return;
+    }
+
+    saveUser(data);
+    // Back to the page RequireAuth sent us from, otherwise home
+    navigate(location.state?.from?.pathname ?? '/', { replace: true });
   };
 
   return (
@@ -119,13 +140,17 @@ const LoginForm = () => {
                 Forgot password?
               </a>
             </div>
+            {submitError && (
+              <p className="mb-3 text-sm text-red-500 text-center">{submitError}</p>
+            )}
             <button
               type="submit"
+              disabled={submitting}
               className="w-full h-12 border-none rounded-[7px] bg-[#247f3d] text-white
                 text-[15px] font-bold cursor-pointer
-                hover:bg-[#1b6730]"
+                hover:bg-[#1b6730] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Login
+              {submitting ? 'Logging in...' : 'Login'}
             </button>
           </form>
           <div className="flex items-center gap-3.75 my-7 text-[#999f9a] text-[11px]">
