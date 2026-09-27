@@ -10,21 +10,31 @@ import CreateAccount from './pages/CreateAccount';
 import Navbar from './components/Navbar.jsx';
 import BookingAppointment from './components/BookingAppointment.jsx';
 import WorkerOffers from './pages/WorkerOffers.jsx';
+import { RequireAuth, GuestOnly } from './components/RouteGuards.jsx';
+
+const STAFF = ['worker', 'admin'];
 
 function AppPrime() {
   return (
     <div>
       <Navbar />
       <Routes>
+        {/* Public */}
         <Route path="/" element={<HomePagePrime />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/employee_booking" element={<WorkerAppointments />} />
-        <Route path="/submit_page" element={<SubmitCar />} />
         <Route path="/find_cars" element={<FindCarsPrime />} />
-        <Route path="/register" element={<CreateAccount />} />
-        <Route path="/appointment" element={<BookingAppointment />} />
-        <Route path="/offers" element={<WorkerOffers />} />
+
+        {/* Logged out only */}
+        <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
+        <Route path="/register" element={<GuestOnly><CreateAccount /></GuestOnly>} />
+
+        {/* Any logged-in user */}
+        <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
+        <Route path="/submit_page" element={<RequireAuth><SubmitCar /></RequireAuth>} />
+        <Route path="/appointment" element={<RequireAuth><BookingAppointment /></RequireAuth>} />
+
+        {/* Staff only (same roles as backend requireRole) */}
+        <Route path="/employee_booking" element={<RequireAuth roles={STAFF}><WorkerAppointments /></RequireAuth>} />
+        <Route path="/offers" element={<RequireAuth roles={STAFF}><WorkerOffers /></RequireAuth>} />
       </Routes>
     </div>
   );
