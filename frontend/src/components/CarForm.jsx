@@ -1,22 +1,23 @@
-import React, { useState, useRef } from 'react';
-import { z } from 'zod';
-import { createCar } from '../apis/carApi';
-import { estimatePrice } from '../apis/estimateApi';
-import PriceEstimateDisplay from './PriceEstimateDisplay';
+import React, { useState, useRef } from "react";
+import { z } from "zod";
+import { createCar } from "../apis/carApi";
+import { estimatePrice } from "../apis/estimateApi";
+import PriceEstimateDisplay from "./PriceEstimateDisplay";
+import { useNavigate } from "react-router-dom";
 
 // PLACE HODLER CLIENT ID
-const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3"
+const PLACEHOLDER_CLIENT_ID = "6ab1575f4b02b92e8a25e7e3";
 
-// I dont remember doing this, I assume it was fe people. 
+// I dont remember doing this, I assume it was fe people.
 const CarSchema = z.object({
-  make: z.string().min(1, 'please select one'),
-  model: z.string().min(2, 'please enter the model'),
-  year: z.string().min(1, 'please select the year'),
-  mileage: z.coerce.number().min(0, 'mileage cannot be negative'),
-  fuel: z.string().min(1, 'please select one'),
-  transmission: z.string().min(1, 'please select one'),
+  make: z.string().min(1, "please select one"),
+  model: z.string().min(2, "please enter the model"),
+  year: z.string().min(1, "please select the year"),
+  mileage: z.coerce.number().min(0, "mileage cannot be negative"),
+  fuel: z.string().min(1, "please select one"),
+  transmission: z.string().min(1, "please select one"),
   price: z.coerce.number().min(1000, "don't hesitate, we will do the rest"),
-  condition: z.string().min(1, 'please select one'),
+  condition: z.string().min(1, "please select one"),
   // TODO: ADD CAR IMAGE FOR LATER ⚠️ Aakash over here!!! Or i can cover this, idk.
   // carImage: z
   //   .custom((file) => file instanceof File && file.size > 0, {
@@ -27,7 +28,7 @@ const CarSchema = z.object({
   //   }),
 });
 
-// Had claude help me with this, but it looks fine. 
+// Had claude help me with this, but it looks fine.
 const EstimateSchema = CarSchema.pick({
   make: true,
   model: true,
@@ -55,7 +56,7 @@ export const CarForm = () => {
 
     if (!validate.success) {
       setErrors(z.flattenError(validate.error).fieldErrors);
-      setEstimateError('Please fill in the car details above first.');
+      setEstimateError("Please fill in the car details above first.");
       setGotEstimate(null);
       return;
     }
@@ -82,7 +83,9 @@ export const CarForm = () => {
     if (result.ok) {
       setGotEstimate(result.data);
     } else {
-      setEstimateError(result.data.message || 'Could not get an estimate. Please try again.');
+      setEstimateError(
+        result.data.message || "Could not get an estimate. Please try again.",
+      );
     }
   };
 
@@ -95,7 +98,7 @@ export const CarForm = () => {
       const errorsMessage = validate.error.issues[0].message;
       setErrors((prev) => ({ ...prev, [fieldName]: errorsMessage }));
     } else {
-      setErrors((prev) => ({ ...prev, [fieldName]: '' }));
+      setErrors((prev) => ({ ...prev, [fieldName]: "" }));
     }
   };
 
@@ -134,13 +137,57 @@ export const CarForm = () => {
     const result = await createCar(carData);
 
     if (result.ok) {
-      setSubmitStatus({ type: 'success', text: 'Your car has been listed!' });
+      setSubmitStatus({ type: "success", text: "Your car has been listed!" });
       form.reset();
       setGotEstimate(null);
       setEstimateError(null);
     } else {
-      setSubmitStatus({ type: 'error', text: result.data.message });
+      setSubmitStatus({ type: "error", text: result.data.message });
     }
+  };
+
+  // Reworked Aakash's Code
+  const navigate = useNavigate();
+    const handlePostCar = async () => {
+    const formData = new FormData(formRef.current);
+    const values = Object.fromEntries(formData.entries());
+
+    const validate = CarSchema.safeParse(values);
+
+    if (!validate.success) {
+      const errors = z.flattenError(validate.error).fieldErrors;
+      setErrors(errors);
+      return;
+    }
+    setErrors({});
+
+    const carData = {
+      client: PLACEHOLDER_CLIENT_ID,
+      make: validate.data.make,
+      model: validate.data.model,
+      year: Number(validate.data.year),
+      mileage: validate.data.mileage,
+      fuel: validate.data.fuel,
+      transmission: validate.data.transmission,
+      estimatedPrice: validate.data.price,
+      condition: validate.data.condition,
+      location: values.location,
+      description: values.description,
+    };
+
+    const result = await createCar(carData);
+
+    if (!result.ok) {
+      setSubmitStatus({ type: "error", text: result.data.message });
+      return;
+    }
+
+    // The backend sends back the saved car, including its new ID
+    const carId = result.data._id;
+
+
+    // THIS IS A PLACEHOLDER LINK, SOMEONE WORK WITH ME TO MAKE THIS WORK WITH THE BOOK APPOINTMENT 
+    navigate(`/appointment/${carId}`);
   };
 
   return (
@@ -174,7 +221,7 @@ export const CarForm = () => {
                 name="make"
                 required
                 onChange={handleChange}
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.make ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.make ? "border-red-500" : "focus:border-[#247f3d]"}`}
               >
                 <option value="">Select Make</option>
                 <option>Audi</option>
@@ -203,7 +250,7 @@ export const CarForm = () => {
                 onChange={handleChange}
                 placeholder="e.g. A4"
                 required
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.model ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.model ? "border-red-500" : "focus:border-[#247f3d]"}`}
               />
               {errors.model && (
                 <p className="mt-1 text-xs text-red-500">{errors.model}</p>
@@ -222,7 +269,7 @@ export const CarForm = () => {
                 name="year"
                 onChange={handleChange}
                 required
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.year ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.year ? "border-red-500" : "focus:border-[#247f3d]"}`}
               >
                 <option value="">Select Year</option>
                 <option>2026</option>
@@ -263,7 +310,7 @@ export const CarForm = () => {
                 placeholder="e.g. 45000"
                 onChange={handleChange}
                 required
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.mileage ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.mileage ? "border-red-500" : "focus:border-[#247f3d]"}`}
               />
               {errors.mileage && (
                 <p className="mt-1 text-xs text-red-500">{errors.mileage}</p>
@@ -282,7 +329,7 @@ export const CarForm = () => {
                 name="fuel"
                 required
                 onChange={handleChange}
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.fuel ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.fuel ? "border-red-500" : "focus:border-[#247f3d]"}`}
               >
                 <option value="">Select Fuel Type</option>
                 <option>Petrol</option>
@@ -307,7 +354,7 @@ export const CarForm = () => {
                 name="transmission"
                 onChange={handleChange}
                 required
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.transmission ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.transmission ? "border-red-500" : "focus:border-[#247f3d]"}`}
               >
                 <option value="">Select Transmission</option>
                 <option>Automatic</option>
@@ -334,7 +381,7 @@ export const CarForm = () => {
                 name="price"
                 placeholder="e.g. 29990"
                 required
-                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.price ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+                className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.price ? "border-red-500" : "focus:border-[#247f3d]"}`}
               />
               {errors.price && (
                 <p className="mt-1 text-xs text-red-500">{errors.price}</p>
@@ -372,7 +419,7 @@ export const CarForm = () => {
               name="condition"
               onChange={handleChange}
               required
-              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.condition ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.condition ? "border-red-500" : "focus:border-[#247f3d]"}`}
             >
               <option value="">Select Condition</option>
               <option value="excellent">Excellent</option>
@@ -415,7 +462,7 @@ export const CarForm = () => {
               id="carImage"
               name="carImage"
               accept="image/*"
-              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.carImage ? 'border-red-500' : 'focus:border-[#247f3d]'}`}
+              className={`h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-3.5 text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10 ${errors.carImage ? "border-red-500" : "focus:border-[#247f3d]"}`}
             />
             {errors.carImage && (
               <p className="mt-1 text-xs text-red-500">{errors.carImage}</p>
@@ -429,18 +476,23 @@ export const CarForm = () => {
             // Recommended by claude when I was debugging
             submitStatus && (
               <p
-                className={`mb-4 text-sm font-semibold ${submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
-                  }`}
+                className={`mb-4 text-sm font-semibold ${
+                  submitStatus.type === "success"
+                    ? "text-[#247f3d]"
+                    : "text-red-500"
+                }`}
               >
                 {submitStatus.text}
               </p>
-            )}
+            )
+          }
 
           {/* AI PRICE ESTIMATE */}
           <PriceEstimateDisplay
             estimate={gotEstimate}
             loading={estimateLoading}
             error={estimateError}
+            handlePostCar={handlePostCar}
           />
 
           {/* BUTTONS AREA */}
@@ -452,7 +504,7 @@ export const CarForm = () => {
               disabled={estimateLoading}
               className="mr-auto inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730] disabled:cursor-not-allowed disabled:opacity-60 max-[700px]:mr-0 max-[700px]:w-full max-[700px]:text-center"
             >
-              {estimateLoading ? 'Estimating…' : 'Estimate Price'}
+              {estimateLoading ? "Estimating…" : "Estimate Price"}
             </button>
             {/* SUBMIT BUTTON */}
             <button

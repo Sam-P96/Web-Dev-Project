@@ -2,7 +2,8 @@ import React from 'react';
 
 
 // Had claude help me with this, cus I wasnt sure how to make the UI for this. But its all basic stuff we all understand.
-const PriceEstimateDisplay = ({ estimate, loading, error }) => {
+const PriceEstimateDisplay = ({ estimate, loading, error, handlePostCar }) => {
+
   if (loading) {
     return (
       <div className="mt-4 rounded-[7px] border border-[#d8dcd8] bg-[#f5f6f4] px-5 py-4">
@@ -50,14 +51,15 @@ const PriceEstimateDisplay = ({ estimate, loading, error }) => {
           Would you like to book an appointment?
         </p>
 
-        <a
-          href="https://www.google.com"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          // orignal placeholder, bring back if new function doesnt work. (just for the feeling) 
+          //href="https://www.google.com"
+          type="button"
           className="mt-3 inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730]"
+          onClick={handlePostCar}
         >
           Book an Appointment →
-        </a>
+        </button>
       </div>
     </div>
   );
