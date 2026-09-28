@@ -1,7 +1,18 @@
+ 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function SearchPrime() {
+  const navigate = useNavigate();
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [MaxPrice, setMaxPrice] = useState("");
+
+
+
   return (
+
     <section className="bg-[#f5f6f4] px-[6%] py-16">
       <div className="max-w-[1200px] mx-auto flex flex-col gap-2 mb-6">
         <p className="text-[#2f9449] text-xs font-extrabold tracking-[1.5px]">
@@ -20,6 +31,8 @@ function SearchPrime() {
             </label>
             <select
               id="make"
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
               className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-sm text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
             >
               <option>All Makes</option>
@@ -38,6 +51,10 @@ function SearchPrime() {
             </label>
             <select
               id="model"
+              value={model}
+
+              onChange={(e) => setModel(e.target.value)}
+
               className="h-11.5 w-full rounded-[7px] border border-[#d8dcd8] bg-white px-3.25 text-sm text-[#202522] outline-none transition duration-200 focus:border-[#247f3d] focus:ring-4 focus:ring-[#247f3d]/10"
             >
               <option>All Models</option>
