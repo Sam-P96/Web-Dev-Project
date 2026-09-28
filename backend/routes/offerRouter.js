@@ -6,23 +6,28 @@ import {
   updateOfferById,
   deleteOfferById
 } from "../controllers/offerControllers.js";
+import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
 const OfferRouter = express.Router();
+
+// Offers are staff-only
+OfferRouter.use(requireAuth, requireRole("worker", "admin"))
+
 //ROUTES
 
 //GET /offers
-OfferRouter.get("/offers", getAllOffer)
+OfferRouter.get("/", getAllOffer)
 
 //POST /offers
-OfferRouter.post("/offers", createNewOffer)
+OfferRouter.post("/", createNewOffer)
 
 //GET /offers/:offerId
-OfferRouter.get("/offers/:offerId", findOfferById)
+OfferRouter.get("/:offerId", findOfferById)
 
 //PUT /offers/:offerId
-OfferRouter.put("/offers/:offerId", updateOfferById)
+OfferRouter.put("/:offerId", updateOfferById)
 
 //DELETE /offers/:offerId
-OfferRouter.delete("/offers/:offerId",deleteOfferById)
+OfferRouter.delete("/:offerId",deleteOfferById)
 
 export default OfferRouter;

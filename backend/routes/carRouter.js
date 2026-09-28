@@ -6,23 +6,26 @@ import {
   updateCarById,
   deleteCarById,
 } from '../controllers/carControllers.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 
 const CarRouter = express.Router();
 //ROUTES
 
+// GET is public (browse cars); writes need a logged-in user
+
 //GET /cars
-CarRouter.get('/cars', getAllCar);
+CarRouter.get('/', getAllCar);
 
 //POST /cars
-CarRouter.post('/cars', createNewCar);
+CarRouter.post('/', requireAuth, createNewCar);
 
 //GET /cars/:carId
-CarRouter.get('/cars/:carId', findCarById);
+CarRouter.get('/:carId', findCarById);
 
 //PUT /cars/:carId
-CarRouter.put('/cars/:carId', updateCarById);
+CarRouter.put('/:carId', requireAuth, updateCarById);
 
 //DELETE /cars/:carId
-CarRouter.delete('/cars/:carId', deleteCarById);
+CarRouter.delete('/:carId', requireAuth, deleteCarById);
 
 export default CarRouter;

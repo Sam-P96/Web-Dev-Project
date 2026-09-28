@@ -1,4 +1,4 @@
-import { getAllCars, updateCar } from '@/apis/carApi';
+import { getAllCars, updateCar } from '@/api/carApi';
 import React, { useEffect, useState } from 'react';
 
 // const initialOffers = [

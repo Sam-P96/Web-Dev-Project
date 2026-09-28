@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { fi } from 'zod/v4/locales';
 
 
-import { registerUser } from '../api/userApi';
+import { signup } from '../api/authApi';
+import { errorMessage } from '../api/client';
+import { useAuth } from '../context/authContext';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -27,9 +29,24 @@ const UserFormSchema = z
     path: ['confirmPassword'],
   });
 
+// Backend stores `age`, the form asks for date of birth
+const ageFromDob = (dob) => {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const hadBirthday =
+    today.getMonth() > birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+  if (!hadBirthday) age -= 1;
+  return age;
+};
+
 export const UserForm = () => {
   const navigate = useNavigate();
+  const { saveUser } = useAuth();
   const [errors, setErrors] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const fieldName = event.target.name;
@@ -48,7 +65,7 @@ export const UserForm = () => {
   };
 
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
 
     event.preventDefault();
 
@@ -76,20 +93,23 @@ export const UserForm = () => {
         password: result.data.password,
         phone: values.phone,
         address: values.address,
-        age: values.age,
-        role: values.role,
+        age: ageFromDob(result.data.dob),
+        // no `role`: the server always creates a client account
       };
 
-      registerUser(dataToSend)
-        .then((response) => {
-          console.log(response);
-          navigate('/login');
-          
-        })
-        .catch((error) => {
-          console.log(error);
-          alert('Something went wrong');
-        });
+      setSubmitting(true);
+      setSubmitError('');
+      const { ok, data } = await signup(dataToSend);
+      setSubmitting(false);
+
+      if (!ok) {
+        setSubmitError(errorMessage(data));
+        return;
+      }
+
+      // Signup already returns a token -> log straight in
+      saveUser(data);
+      navigate('/', { replace: true });
     }
   };
 
@@ -254,17 +274,20 @@ export const UserForm = () => {
                 className={inputClasses}
               >
                 <option value="client">Client</option>
-                <option value="worker">Worker</option>
               </select>
             </div>
           </div>
           {/* SUBMIT */}
+          {submitError && (
+            <p className="mt-6 text-sm text-red-500 text-center">{submitError}</p>
+          )}
           <div className="flex items-center justify-center p-4">
             <button
               type="submit"
-              className="w-50 border-none  rounded-[7px] bg-[#247f3d] text-white text-lg font-bold cursor-pointer p-4 mt-8 hover:bg-[#1b6730] "
+              disabled={submitting}
+              className="w-50 border-none  rounded-[7px] bg-[#247f3d] text-white text-lg font-bold cursor-pointer p-4 mt-8 hover:bg-[#1b6730] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Submit
+              {submitting ? 'Creating...' : 'Submit'}
             </button>
           </div>
         </form>

@@ -1,28 +1,42 @@
 import express from "express";
 import {
+  signupUser,
+  loginUser,
+  getMe,
   getAllUser,
-  createNewUser,
   findUserById,
   updateUserById,
   deleteUserById
 } from "../controllers/userControllers.js";
+import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
 const UserRouter = express.Router();
 //ROUTES
 
-//GET /users
-UserRouter.get("/users", getAllUser)
+// ---- Public ----
 
-//POST /users
-UserRouter.post("/users", createNewUser)
+//POST /users/signup
+UserRouter.post("/signup", signupUser)
 
-//GET /users/:userId
-UserRouter.get("/users/:userId", findUserById)
+//POST /users/login
+UserRouter.post("/login", loginUser)
 
-//PUT /users/:userId
-UserRouter.put("/users/:userId", updateUserById)
+// ---- Everything below needs a valid token ----
+UserRouter.use(requireAuth)
 
-//DELETE /users/:userId
-UserRouter.delete("/users/:userId",deleteUserById)
+//GET /users/me  (must stay above /:userId, or "me" is treated as an id)
+UserRouter.get("/me", getMe)
+
+//GET /users  (staff only: clients must not list other users)
+UserRouter.get("/", requireRole("worker", "admin"), getAllUser)
+
+//GET /users/:userId  (self or admin, checked in controller)
+UserRouter.get("/:userId", findUserById)
+
+//PUT /users/:userId  (self or admin, checked in controller)
+UserRouter.put("/:userId", updateUserById)
+
+//DELETE /users/:userId  (self or admin, checked in controller)
+UserRouter.delete("/:userId",deleteUserById)
 
 export default UserRouter;

@@ -2,7 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 
 
 // Always check the damn model's name! Anyway, the other one didnt work, so I used this instead
-const MODEL_NAME = 'models/gemini-3.8-flash';
+const MODEL_NAME = 'gemini-3.6-flash'; //Duy change the model to 3.6 cuz 3.8 is overload by some how and i coundn't test before merging :v
 
 // ignore this
 // const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

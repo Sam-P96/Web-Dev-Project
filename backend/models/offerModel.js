@@ -89,7 +89,7 @@ const updateById = async (id, updatedData) => {
     });
 
     const offer = await Offer.findByIdAndUpdate(id, allowed, {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
     });
 

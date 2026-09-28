@@ -5,14 +5,14 @@ import * as Appointment from "../models/appointmentModel.js";
 const getAllAppointment = async (req, res) => {
     const workerId = req.query.worker;
     if (workerId && !mongoose.Types.ObjectId.isValid(workerId)) {
-        return res.status(400).json({message: "Invalid worker id"})
+        return res.status(400).json({ error: "Invalid worker id"})
     }
 
     try {
     const getAllResponse = await Appointment.getAll(workerId);
     res.json(getAllResponse);
     } catch (err) {
-        res.status(500).json({ message: err.message});
+        res.status(500).json({ error: err.message});
     };
 
 };
@@ -23,7 +23,7 @@ const createNewAppointment = async (req, res) => {
     const newAppointment = await Appointment.addOne(data)
 
     if (newAppointment.error) {
-        res.status(400).json({message: newAppointment.error });
+        res.status(400).json({ error: newAppointment.error });
     } else {
         res.status(201).json(newAppointment);
     }
@@ -33,7 +33,7 @@ const findAppointmentById = async (req, res) => {
     const appointmentId = req.params.appointmentId;
     const appointment = await Appointment.findById(appointmentId);
 
-    if (!appointment) res.status(404).json({message: "Appointment not found"});
+    if (!appointment) res.status(404).json({ error: "Appointment not found"});
     else res.json(appointment); 
 };
 
@@ -42,7 +42,7 @@ const updateAppointmentById = async (req, res) => {
     const appointment = await Appointment.findById(appointmentId);
     const updatedData = req.body;
 
-    if(!appointment) res.status(404).json({message: "Appointment not found"});
+    if(!appointment) res.status(404).json({ error: "Appointment not found"});
     
     else {
         const  updatedAppointment = await Appointment.updateById(appointmentId, updatedData);
@@ -54,12 +54,12 @@ const deleteAppointmentById = async (req, res) => {
     const appointmentId = req.params.appointmentId;
     const appointment = await Appointment.findById(appointmentId);
 
-    if (!appointment) res.status(404).json({message: "Appointment not found "})
+    if (!appointment) res.status(404).json({ error: "Appointment not found"})
     
     else {
         const isDeleted = await Appointment.deleteById(appointmentId);
         if (isDeleted) res.status(200).json({message: "Delete appointment successfully"})
-        else res.status(500).json({message: "Delete failed"}); 
+        else res.status(500).json({ error: "Delete failed"}); 
     }
 }
 

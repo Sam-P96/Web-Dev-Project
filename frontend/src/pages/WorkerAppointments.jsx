@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useCurrentUser } from '@/lib/useCurrentUser';
+import { useAuth } from '@/context/authContext';
+import { getAppointmentsByWorker, updateAppointment } from '@/api/appointmentApi';
+import { errorMessage } from '@/api/client';
 
 // const initialAppointments = [
 //   {
@@ -11,38 +13,16 @@ import { useCurrentUser } from '@/lib/useCurrentUser';
 //     date: '2026-09-15',
 //     timeSlot: '10:00 AM',
 //     status: 'Scheduled'
-//   },
-//   {
-//     id: 'APT-102',
-//     sellerName: 'Sanna',
-//     make: 'BMW',
-//     model: '3 Series',
-//     year: 2021,
-//     date: '2026-09-16',
-//     timeSlot: '02:00 PM',
-//     status: 'Completed'
-//   },
-//   {
-//     id: 'APT-103',
-//     sellerName: 'Juho',
-//     make: 'Audi',
-//     model: 'A4',
-//     year: 2020,
-//     date: '2026-09-17',
-//     timeSlot: '11:30 AM',
-//     status: 'Cancelled'
 //   }
 // ];
 
-const API = import.meta.env.VITE_API_URL;
-
-// Trang thai con "song" -> worker con duoc thao tac
+// Appointment is still "active" -> the worker can still act on it
 const isActive = (s) => s === 'booked' || s === 'confirmed';
 
 //ADAPTER
 const pad = (n) => String(n).padStart(2, '0');
 
-// Tach 1 Date ISO thanh 2 field hop voi <input type="date"> va <input type="time">
+// Split an ISO date into the 2 fields used by <input type="date"> and <input type="time">
 const splitDateTime = (iso) => {
   const d = new Date(iso);
   return {
@@ -63,8 +43,8 @@ const toRow = (a) => {
   };
 };
 
-// PUT tra ve document KHONG populate (findByIdAndUpdate) nen chi merge field thay doi,
-// giu lai sellerName / car cua dong cu.
+// PUT returns an UNPOPULATED document (findByIdAndUpdate), so only merge the changed fields
+// and keep sellerName / car from the existing row.
 const mergeRow = (row, updated) => ({
   ...row,
   ...splitDateTime(updated.scheduledAt),
@@ -74,7 +54,8 @@ const mergeRow = (row, updated) => ({
 
 export default function WorkerAppointments() {
 
-  const {_id: workerId} = useCurrentUser();
+  // Route is staff-only (RequireAuth), so user is always set here
+  const workerId = useAuth().user._id;
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,13 +72,11 @@ export default function WorkerAppointments() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(
-          `${API}/appointments?worker=${workerId}`,
-          { signal: ctrl.signal }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { ok, status, data } = await getAppointmentsByWorker(workerId, {
+          signal: ctrl.signal,
+        });
+        if (!ok) throw new Error(errorMessage(data, `HTTP ${status}`));
 
-        const data = await res.json();
         setAppointments(data.map(toRow));
       } catch (e) {
         if (e.name !== 'AbortError') setError(e.message);
@@ -113,27 +92,18 @@ export default function WorkerAppointments() {
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
 
-  // id cua dong dang goi PUT -> de disable nut, tranh double click
+  // id of the row being saved -> disable its buttons to prevent double clicks
   const [savingId, setSavingId] = useState(null);
   const [actionError, setActionError] = useState(null);
 
-  // PUT /appointments/:id , body chi chua field can doi
+  // PUT /appointments/:id, body only contains the fields to change
   const patchAppointment = async (id, body) => {
     setSavingId(id);
     setActionError(null);
     try {
-      const res = await fetch(`${API}/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const { ok, status, data: updated } = await updateAppointment(id, body);
+      if (!ok) throw new Error(errorMessage(updated, `HTTP ${status}`));
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        throw new Error(payload?.message ?? `HTTP ${res.status}`);
-      }
-
-      const updated = await res.json();
       setAppointments((prev) =>
         prev.map((apt) => (apt.id === id ? mergeRow(apt, updated) : apt))
       );
@@ -161,15 +131,15 @@ export default function WorkerAppointments() {
 
   const handleSaveReschedule = async () => {
     if (!newDate || !newTime) {
-      setActionError('Vui long chon ca ngay va gio');
+      setActionError('Please choose both a date and a time');
       return;
     }
 
-    // `${yyyy-mm-dd}T${HH:mm}` khong co Z -> parse theo gio dia phuong,
-    // khop voi cach splitDateTime doc nguoc lai
+    // `${yyyy-mm-dd}T${HH:mm}` has no Z -> parsed as local time,
+    // matching how splitDateTime reads it back
     const scheduledAt = new Date(`${newDate}T${newTime}`);
     if (Number.isNaN(scheduledAt.getTime())) {
-      setActionError('Ngay gio khong hop le');
+      setActionError('Invalid date or time');
       return;
     }
 
@@ -190,13 +160,13 @@ export default function WorkerAppointments() {
 
       {loading && <p className="mb-3 text-sm text-gray-500">Loading…</p>}
       {error && (
-        <p className="mb-3 text-sm text-red-600">Lỗi tải dữ liệu: {error}</p>
+        <p className="mb-3 text-sm text-red-600">Failed to load appointments: {error}</p>
       )}
       {actionError && !isModalOpen && (
-        <p className="mb-3 text-sm text-red-600">Cập nhật thất bại: {actionError}</p>
+        <p className="mb-3 text-sm text-red-600">Update failed: {actionError}</p>
       )}
       {!loading && !error && appointments.length === 0 && (
-        <p className="mb-3 text-sm text-gray-500">Chưa có lịch hẹn nào.</p>
+        <p className="mb-3 text-sm text-gray-500">No appointments yet.</p>
       )}
 
       <div className="bg-white border rounded-lg overflow-x-auto shadow-sm">

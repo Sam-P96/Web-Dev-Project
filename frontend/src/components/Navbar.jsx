@@ -1,49 +1,60 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/authContext';
+
+const STAFF = ['worker', 'admin'];
+
+// One list for desktop + mobile (they used to drift apart and point to dead routes).
+// show(user) decides visibility — keep it in sync with the guards in AppPrime.jsx
+const NAV_LINKS = [
+  { to: '/', label: 'Home', show: () => true },
+  { to: '/register', label: 'Create Account', show: (user) => !user },
+  { to: '/employee_booking', label: 'Booking', show: (user) => STAFF.includes(user?.role) },
+  { to: '/profile', label: 'Profile', show: (user) => !!user },
+  { to: '/appointment', label: 'Appointments', show: (user) => !!user },
+  { to: '/offers', label: 'Offers', show: (user) => STAFF.includes(user?.role) },
+];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const links = NAV_LINKS.filter((link) => link.show(user));
+  const closeMenu = () => setIsOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    closeMenu();
+    navigate('/');
+  };
+
+  // Login button, or "name + Logout" when logged in
+  const authControls = user ? (
+    <>
+      <span className="text-sm font-semibold text-[#151815] whitespace-nowrap">
+        {user.name ?? user.email}
+      </span>
+      <button type="button" onClick={handleLogout} className="bg-[#1f7a38] text-white! px-4.5 py-2.5 rounded-[7px] font-bold transition duration-200 ease-in-out hover:bg-[#185f2c]">
+        Logout
+      </button>
+    </>
+  ) : (
+    <Link to="/login" onClick={closeMenu} className="bg-[#1f7a38] text-white! px-4.5 py-2.5 rounded-[7px] font-bold transition duration-200 ease-in-out hover:bg-[#185f2c]">
+      Login
+    </Link>
+  );
+
   return (
     <div>
       <header className="w-full min-h-19 bg-white flex items-center justify-between px-[6%] border-b border-[#e8eae7] gap-8.75 relative">
         <div className="text-[28px] font-extrabold tracking-[2px] text-[#151815]">AutoTori</div>
         <nav className="hidden md:flex items-center gap-6.5 ml-auto ">
-          <Link
-            to="/"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Home
-          </Link>
-          <Link
-            to="/register"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Create Account
-          </Link>
-          <Link
-            to="/employee_booking"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Booking
-          </Link>
-          <Link
-            to="/profile"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Profile
-          </Link>
-          <Link
-            to="appointment"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Appointments
-          </Link>
-          <Link
-            to="/offers"
-            className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]"
-          >
-            Offers
-          </Link>
+          {links.map((link) => (
+            <Link key={link.to} to={link.to} className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out whitespace-nowrap hover:text-[#238636]">
+              {link.label}
+            </Link>
+          ))}
         </nav>
         <div className="hidden md:flex items-center gap-3.75 shrink-0">
           <select
@@ -54,12 +65,7 @@ const Navbar = () => {
             <option>FI</option>
             <option>SV</option>
           </select>
-          <Link
-            to="/login"
-            className="bg-[#1f7a38] text-white! px-4.5 py-2.5 rounded-[7px] font-bold transition duration-200 ease-in-out hover:bg-[#185f2c]"
-          >
-            Login
-          </Link>
+          {authControls}
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -78,42 +84,11 @@ const Navbar = () => {
         </button>
         {isOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-[#e8eae7] flex flex-col gap-4.5 px-[6%] py-6 shadow-md z-50">
-            <Link
-              to="/"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Home
-            </Link>
-            <Link
-              to="/create-account"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Create Account
-            </Link>
-            <Link
-              to="/booking"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Booking
-            </Link>
-            <Link
-              to="/profile"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Profile
-            </Link>
-            <Link
-              to="/worker/appointments"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Appointments
-            </Link>
-            <Link
-              to="/worker/offers"
-              className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]"
-            >
-              Offers
-            </Link>
+            {links.map((link) => (
+              <Link key={link.to} to={link.to} onClick={closeMenu} className="text-sm font-semibold text-[#4c524e] transition duration-200 ease-in-out hover:text-[#238636]">
+                {link.label}
+              </Link>
+            ))}
 
             <div className="flex items-center gap-4 pt-4 border-t border-[#e8eae7]">
               <select
@@ -125,12 +100,7 @@ const Navbar = () => {
                 <option>SV</option>
               </select>
 
-              <Link
-                to="/login"
-                className="bg-[#1f7a38] text-white! px-4.5 py-2.5 rounded-[7px] font-bold transition duration-200 ease-in-out hover:bg-[#185f2c]"
-              >
-                Login
-              </Link>
+              {authControls}
             </div>
           </div>
         )}

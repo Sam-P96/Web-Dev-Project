@@ -1,7 +1,8 @@
+import { createCar } from '../api/carApi';
+import { errorMessage } from '../api/client';
 import React, { useState, useRef } from "react";
 import { z } from "zod";
-import { createCar } from "../apis/carApi";
-import { estimatePrice } from "../apis/estimateApi";
+import { estimatePrice } from "../api/estimateApi";
 import PriceEstimateDisplay from "./PriceEstimateDisplay";
 import { useNavigate } from "react-router-dom";
 
@@ -121,7 +122,7 @@ export const CarForm = () => {
     console.log(values);
 
     const carData = {
-      client: PLACEHOLDER_CLIENT_ID,
+      // no `client`: the server sets the owner from the login token
       make: validate.data.make,
       model: validate.data.model,
       year: Number(validate.data.year),

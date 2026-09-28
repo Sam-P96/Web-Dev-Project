@@ -109,7 +109,7 @@ const updateById = async (id, updatedData) => {
   });
 
   const car = await Car.findByIdAndUpdate(id, allowed, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
 

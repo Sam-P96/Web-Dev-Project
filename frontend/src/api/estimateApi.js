@@ -1,8 +1,9 @@
-const BASE_URL = 'http://localhost:3000/ai';
+const API = import.meta.env.VITE_API_URL || '/api';
+
 
 export const estimatePrice = async (carData) => {
   try {
-    const response = await fetch(`${BASE_URL}/estimate-price`, {
+    const response = await fetch(`${API}/ai/estimate-price`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(carData),
