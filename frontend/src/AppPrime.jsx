@@ -24,6 +24,7 @@ function AppPrime() {
         <Route path="/find_cars" element={<FindCarsPrime />} />
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/appointment" element={<BookingAppointment />} />
+        <Route path="/appointment/:carId" element={<BookingAppointment />} />
         <Route path="/offers" element={<WorkerOffers />} />
       </Routes>
     </div>

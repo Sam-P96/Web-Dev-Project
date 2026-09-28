@@ -33,6 +33,9 @@ const carSchema = new mongoose.Schema({
   estimatedPrice: { type: Number, default: null },
   isVerified: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
 });
+
+
+
 const Car = mongoose.model('Car', carSchema);
 
 // new Require Fields
