@@ -48,17 +48,19 @@ export default function WorkerOffers() {
 
         console.log(data);
 
-        const formattedOffers = data.map((car) => ({
-          id: car._id,
-          carName: `${car.make} ${car.model}`,
-          mileage: `${car.mileage.toLocaleString()} km`,
-          location: 'Unknown',
-          sellerName: car.seller,
-          price: car.estimatedPrice,
-          status: car.isVerified,
-          image: '',
-          submittedDate: car.year,
-        }));
+        const formattedOffers = data
+          .filter((car) => car.company)
+          .map((car) => ({
+            id: car._id,
+            carName: `${car.make} ${car.model}`,
+            mileage: `${car.mileage.toLocaleString()} km`,
+            location: car.location,
+            sellerName: car.seller,
+            price: car.price,
+            status: car.isVerified,
+            image: car.image,
+            submittedDate: car.year,
+          }));
 
         setOffers(formattedOffers);
       } catch (error) {
@@ -162,7 +164,9 @@ export default function WorkerOffers() {
 
                     <td className="p-4 text-[#151815]">{item.sellerName}</td>
 
-                    <td className="p-4 font-bold text-[#151815]">€{item.price.toLocaleString()}</td>
+                    <td className="p-4 font-bold text-[#151815]">
+                      €{item.price != null ? `€${item.price.toLocaleString()}` : 'N/A'}
+                    </td>
 
                     <td className="p-4">
                       <span
@@ -249,7 +253,10 @@ export default function WorkerOffers() {
                       <span className="text-xs text-[#6b716d] block mb-1">Offer Amount</span>
 
                       <span className="text-2xl font-black text-[#247f3d]">
-                        €{selectedOffer.price.toLocaleString()}
+                        €{' '}
+                        {selectedOffer.price != null
+                          ? `€${selectedOffer.price.toLocaleString()}`
+                          : 'N/A'}
                       </span>
                     </div>
                   </div>
