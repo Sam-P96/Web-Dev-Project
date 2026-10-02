@@ -49,7 +49,14 @@ export default function ChatWidget() {
     }
     setMessages((prev) => [
       ...prev,
-      { id: createId(), role: 'assistant', content: data.reply, cars: data.cars, createdAt: new Date().toISOString() },
+      {
+        id: createId(),
+        role: 'assistant',
+        content: data.reply,
+        cars: data.cars,
+        sources: data.sources,
+        createdAt: new Date().toISOString(),
+      },
     ]);
     if (!isOpenRef.current) setHasUnread(true);
   }, []);

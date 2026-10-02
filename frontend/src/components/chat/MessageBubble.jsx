@@ -1,15 +1,17 @@
-import { AlertCircle, RotateCw } from 'lucide-react';
+import { AlertCircle, BookOpen, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import BotAvatar from './BotAvatar.jsx';
 import { ChatCarList } from './ChatCarCard.jsx';
 import { formatTime } from './formatters.js';
 
-// message = { id, role: 'user' | 'assistant', content, cars?, createdAt? }
+// message = { id, role: 'user' | 'assistant', content, cars?, sources?, createdAt? }
 export function MessageBubble({ message, getCarHref }) {
   const isUser = message.role === 'user';
   const time = formatTime(message.createdAt);
   const hasCars = !isUser && message.cars?.length > 0;
+  // FAQ sections the backend based the answer on (POST /api/chat -> sources)
+  const hasSources = !isUser && message.sources?.length > 0;
 
   return (
     <div className={cn('group flex items-start gap-2', isUser ? 'justify-end' : 'justify-start')}>
@@ -34,6 +36,15 @@ export function MessageBubble({ message, getCarHref }) {
             <span className="sr-only">{isUser ? 'You said: ' : 'Assistant said: '}</span>
             {message.content}
           </div>
+        )}
+
+        {hasSources && (
+          <p className="flex items-start gap-1 px-1 text-[11px] leading-snug text-muted-foreground">
+            <BookOpen aria-hidden="true" className="mt-px size-3 shrink-0" />
+            <span>
+              {message.sources.length === 1 ? 'Source' : 'Sources'}: {message.sources.join(' · ')}
+            </span>
+          </p>
         )}
 
         {hasCars && (
