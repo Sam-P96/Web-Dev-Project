@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/authContext';
-import { getAppointmentsByWorker, updateAppointment } from '@/api/appointmentApi';
+import { getAllAppointments, updateAppointment } from '@/api/appointmentApi';
 import { errorMessage } from '@/api/client';
+import { getAllUsers } from '@/api/userApi';
 
 // const initialAppointments = [
 //   {
@@ -15,6 +16,8 @@ import { errorMessage } from '@/api/client';
 //     status: 'Scheduled'
 //   }
 // ];
+
+
 
 // Appointment is still "active" -> the worker can still act on it
 const isActive = (s) => s === 'booked' || s === 'confirmed';
@@ -40,6 +43,7 @@ const toRow = (a) => {
     year: a.car?.year ?? '',
     ...splitDateTime(a.scheduledAt),
     status: a.status,
+    worker: a.worker ?? null,
   };
 };
 
@@ -49,10 +53,19 @@ const mergeRow = (row, updated) => ({
   ...row,
   ...splitDateTime(updated.scheduledAt),
   status: updated.status,
+  worker: updated.worker ?? null,
 });
 
 
 export default function WorkerAppointments() {
+
+  const [showPast, setShowPast] = useState(false);
+
+  // users with role "worker", for the Assigned To dropdown
+  const [workers, setWorkers] = useState([]);
+
+  // false = only "my" (the user if they are the worker) appointments (default), true = everyone's
+  const [showAll, setShowAll] = useState(false);
 
   // Route is staff-only (RequireAuth), so user is always set here
   const workerId = useAuth().user._id;
@@ -66,18 +79,23 @@ export default function WorkerAppointments() {
       setLoading(false);
       return
 
-    }   
+    }
     const ctrl = new AbortController();
     (async () => {
       try {
         setLoading(true);
         setError(null);
-        const { ok, status, data } = await getAppointmentsByWorker(workerId, {
+        const { ok, status, data } = await getAllAppointments({
           signal: ctrl.signal,
         });
         if (!ok) throw new Error(errorMessage(data, `HTTP ${status}`));
 
         setAppointments(data.map(toRow));
+        // Load users for the dropdown
+        const users = await getAllUsers({ signal: ctrl.signal });
+        if (users.ok) {
+          setWorkers(users.data.filter((u) => u.role === 'worker'));
+        }
       } catch (e) {
         if (e.name !== 'AbortError') setError(e.message);
       } finally {
@@ -154,99 +172,141 @@ export default function WorkerAppointments() {
     return patchAppointment(id, { status: newStatus });
   };
 
-  return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Worker Appointments</h1>
+  // here so that if we dont assign a wroker, its gonna be set to null.
+  const handleWorkerChange = (id, newWorker) => {
+    return patchAppointment(id, { worker: newWorker || null });
+  };
 
-      {loading && <p className="mb-3 text-sm text-gray-500">Loading…</p>}
+
+  // based on the toggle, it shows either all or only the user(worker)'s stuff
+  const visibleAppointments = showAll
+    ? appointments
+    : appointments.filter((apt) => apt.worker === workerId);
+
+  const today = splitDateTime(new Date()).date;
+
+  // toggle past and future appointments
+  const shownAppointments = visibleAppointments.filter((apt) =>
+    showPast ? apt.date < today : apt.date >= today
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <h1 className="text-3xl font-bold text-[#151815] mb-5">Worker Appointments</h1>
+      <button
+        onClick={() => setShowAll(!showAll)}
+        className="mb-5 cursor-pointer rounded-[7px] border border-[#d8dcd8] bg-white px-4 py-2 text-sm font-semibold text-[#151815] transition hover:border-[#247f3d] hover:text-[#247f3d]"
+      >
+        {showAll ? 'Show only my appointments' : 'Show all appointments'}
+      </button>
+      <button
+        onClick={() => setShowPast(!showPast)}
+        className="mb-5 ml-2 cursor-pointer rounded-[7px] border border-[#d8dcd8] bg-white px-4 py-2 text-sm font-semibold text-[#151815] transition hover:border-[#247f3d] hover:text-[#247f3d]"
+      >
+        {showPast ? 'Show upcoming appointments' : 'Show past appointments'}
+      </button>
+
+      {loading && <p className="mb-3 text-sm text-[#6b716d]">Loading…</p>}
       {error && (
-        <p className="mb-3 text-sm text-red-600">Failed to load appointments: {error}</p>
+        <p className="mb-3 text-sm text-rose-600">Failed to load appointments: {error}</p>
       )}
       {actionError && !isModalOpen && (
-        <p className="mb-3 text-sm text-red-600">Update failed: {actionError}</p>
+        <p className="mb-3 text-sm text-rose-600">Update failed: {actionError}</p>
       )}
-      {!loading && !error && appointments.length === 0 && (
-        <p className="mb-3 text-sm text-gray-500">No appointments yet.</p>
+      {!loading && !error && shownAppointments.length === 0 && (
+        <p className="mb-3 text-sm text-[#6b716d]">No appointments yet.</p>
       )}
 
-      <div className="bg-white border rounded-lg overflow-x-auto shadow-sm">
+      <div className="bg-white border border-[#d8dcd8] rounded-xl overflow-x-auto shadow-sm">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 text-sm font-semibold text-gray-700 border-b">
+          <thead className="bg-[#f4f6f4] text-xs font-bold uppercase tracking-wider text-[#4c524e] border-b border-[#d8dcd8]">
             <tr>
-              <th className="p-3">Appointment ID</th>
-              <th className="p-3">Car Details</th>
-              <th className="p-3">Seller Name</th>
-              <th className="p-3">Date & Time</th>
-              <th className="p-3">Status</th>
-              <th className="p-3 text-right">Actions</th>
+              <th className="p-4 whitespace-nowrap">Appointment ID</th>
+              <th className="p-4 whitespace-nowrap">Car Details</th>
+              <th className="p-4 whitespace-nowrap">Seller Name</th>
+              <th className="p-4 whitespace-nowrap">Date & Time</th>
+              <th className="p-4 whitespace-nowrap">Status</th>
+              <th className="p-4 whitespace-nowrap">Assigned To</th>
+              <th className="p-4 whitespace-nowrap text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y text-sm">
-            {appointments.map((apt) => {
+          <tbody className="divide-y divide-[#e8eae7] text-sm">
+            {shownAppointments.map((apt) => {
               const busy = savingId === apt.id;
               const locked = !isActive(apt.status) || busy;
 
               return (
-              <tr key={apt.id} className="hover:bg-gray-50">
-                <td className="p-3 font-mono">{apt.id}</td>
-                <td className="p-3 font-medium">
-                  {apt.year} {apt.make} {apt.model}
-                </td>
-                <td className="p-3">{apt.sellerName}</td>
-                <td className="p-3">
-                  {apt.date} at {apt.timeSlot}
-                </td>
-                <td className="p-3">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold capitalize ${
-                      isActive(apt.status)
-                        ? 'bg-blue-100 text-blue-800'
+                <tr key={apt.id} className="hover:bg-[#f8faf8] transition">
+                  <td className="p-4 font-mono text-xs text-[#4c524e]">{apt.id}</td>
+                  <td className="p-4 font-semibold text-[#151815] whitespace-nowrap">
+                    {apt.year} {apt.make} {apt.model}
+                  </td>
+                  <td className="p-4 text-[#151815] whitespace-nowrap">{apt.sellerName}</td>
+                  <td className="p-4 text-[#151815] whitespace-nowrap">
+                    {apt.date} at {apt.timeSlot}
+                  </td>
+                  <td className="p-4">
+                    <span
+                      className={`inline-block px-2.5 py-1 rounded-full border text-xs font-semibold capitalize ${isActive(apt.status)
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
                         : apt.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {apt.status}
-                  </span>
-                </td>
-                <td className="p-3 text-right space-x-2">
-                  <button
-                    onClick={() => openRescheduleModal(apt)}
-                    disabled={locked}
-                    className={`px-3 py-1 text-xs rounded font-medium ${
-                      locked
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
-                    }`}
-                  >
-                    Reschedule
-                  </button>
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
+                        }`}
+                    >
+                      {apt.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <select
+                      value={apt.worker ?? ''}
+                      onChange={(e) => handleWorkerChange(apt.id, e.target.value)}
+                      disabled={busy}
+                      className="h-9 cursor-pointer rounded-[7px] border border-[#d8dcd8] bg-white px-2 text-sm text-[#151815] outline-none focus:border-[#247f3d] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Unassigned</option>
+                      {workers.map((w) => (
+                        <option key={w._id} value={w._id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="p-4 text-right whitespace-nowrap space-x-2">
+                    <button
+                      onClick={() => openRescheduleModal(apt)}
+                      disabled={locked}
+                      className={`px-3 py-1.5 text-xs rounded-[7px] border font-bold transition ${locked
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600 cursor-pointer'
+                        }`}
+                    >
+                      Reschedule
+                    </button>
 
-                  <button
-                    onClick={() => handleStatusChange(apt.id, 'completed')}
-                    disabled={locked}
-                    className={`px-3 py-1 text-xs rounded font-medium ${
-                      locked
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-green-600 text-white hover:bg-green-700'
-                    }`}
-                  >
-                    {busy ? 'Saving…' : 'Complete'}
-                  </button>
+                    <button
+                      onClick={() => handleStatusChange(apt.id, 'completed')}
+                      disabled={locked}
+                      className={`px-3 py-1.5 text-xs rounded-[7px] border font-bold transition ${locked
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-[#247f3d] text-white border-[#247f3d] hover:bg-[#1b6730] cursor-pointer'
+                        }`}
+                    >
+                      {busy ? 'Saving…' : 'Complete'}
+                    </button>
 
-                  <button
-                    onClick={() => handleStatusChange(apt.id, 'cancelled')}
-                    disabled={locked}
-                    className={`px-3 py-1 text-xs rounded font-medium ${
-                      locked
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-red-600 text-white hover:bg-red-700'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                </td>
-              </tr>
+                    <button
+                      onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                      disabled={locked}
+                      className={`px-3 py-1.5 text-xs rounded-[7px] border font-bold transition ${locked
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 cursor-pointer'
+                        }`}
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
@@ -255,48 +315,48 @@ export default function WorkerAppointments() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg border">
-            <h2 className="text-lg font-bold mb-4">Reschedule Appointment</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl border border-[#d8dcd8]">
+            <h2 className="text-lg font-bold text-[#151815] mb-4">Reschedule Appointment</h2>
+            <p className="text-sm text-[#4c524e] mb-4">
               Editing Appointment ID: <strong>{selectedAptId}</strong>
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">New Date</label>
+              <label className="block text-sm font-bold text-[#151815] mb-1.5">New Date</label>
               <input
                 type="date"
                 value={newDate}
                 onChange={(e) => setNewDate(e.target.value)}
-                className="w-full border p-2 rounded text-sm"
+                className="w-full h-11 rounded-[7px] border border-[#d8dcd8] bg-white px-3 text-sm outline-none focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)]"
               />
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">New Time Slot</label>
+              <label className="block text-sm font-bold text-[#151815] mb-1.5">New Time Slot</label>
               <input
                 type="time"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                className="w-full border p-2 rounded text-sm"
+                className="w-full h-11 rounded-[7px] border border-[#d8dcd8] bg-white px-3 text-sm outline-none focus:border-[#247f3d] focus:shadow-[0_0_0_3px_rgba(36,127,61,0.1)]"
               />
             </div>
 
             {actionError && (
-              <p className="mb-2 text-sm text-red-600">{actionError}</p>
+              <p className="mb-2 text-sm text-rose-600">{actionError}</p>
             )}
 
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={closeModal}
                 disabled={savingId === selectedAptId}
-                className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                className="cursor-pointer px-4 py-2 text-sm font-semibold rounded-[7px] border border-[#d8dcd8] bg-white text-[#151815] hover:bg-[#f4f6f4] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveReschedule}
                 disabled={savingId === selectedAptId}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className="cursor-pointer px-4 py-2 text-sm font-bold rounded-[7px] bg-[#247f3d] text-white hover:bg-[#1b6730] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {savingId === selectedAptId ? 'Saving…' : 'Save Changes'}
               </button>

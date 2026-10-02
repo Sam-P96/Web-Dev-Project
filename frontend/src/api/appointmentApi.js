@@ -13,3 +13,11 @@ export const updateAppointment = (id, changes) =>
 // POST /appointments — body is the new appointment
 export const createAppointment = (appointmentData) =>
   apiFetch('/appointments', { method: 'POST', body: appointmentData });
+
+// GET /appointments — every appointment (no worker filter)
+export const getAllAppointments = ({ signal } = {}) =>
+  apiFetch('/appointments', { signal });
+
+// DELETE /appointments/:id — removes it permanently
+export const deleteAppointment = (id) =>
+  apiFetch(`/appointments/${id}`, { method: 'DELETE' });

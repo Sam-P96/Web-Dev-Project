@@ -27,7 +27,7 @@ const BookingAppointment = ({ importSeller, importCarId }) => {
   const [seller, setSeller] = useState("6aba7e356af774660cbf46ff");
   // for worker, lets fetch the worker with the least numnber of appointments then automatically assign
   // this might throw an error, I mightve planned for this to be an ID, this is a placeholder for now.
-  const [worker, setWorker] = useState("6aba7e356af774660cbf46ff");
+  const [worker, setWorker] = useState("6abf9d5c7ce2da5a4c066321");
   const [scheduledAt, setScheduledAt] = useState(null);
   const [location, setLocation] = useState("Helsinki");
   const [notes, setNotes] = useState("No Notes");
