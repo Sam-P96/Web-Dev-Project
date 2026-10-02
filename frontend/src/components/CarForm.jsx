@@ -149,7 +149,7 @@ export const CarForm = () => {
 
   // Reworked Aakash's Code
   const navigate = useNavigate();
-    const handlePostCar = async () => {
+  const handlePostCar = async () => {
     const formData = new FormData(formRef.current);
     const values = Object.fromEntries(formData.entries());
 
@@ -477,11 +477,10 @@ export const CarForm = () => {
             // Recommended by claude when I was debugging
             submitStatus && (
               <p
-                className={`mb-4 text-sm font-semibold ${
-                  submitStatus.type === "success"
+                className={`mb-4 text-sm font-semibold ${submitStatus.type === "success"
                     ? "text-[#247f3d]"
                     : "text-red-500"
-                }`}
+                  }`}
               >
                 {submitStatus.text}
               </p>

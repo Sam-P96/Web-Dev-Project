@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import { createAppointment } from "../api/appointmentApi";
 
 const BookingAppointment = ({ importSeller, importCarId }) => {
   //we can take the slots as the props, then filter this availableSlots=availableSlots.filter
@@ -63,17 +64,9 @@ const BookingAppointment = ({ importSeller, importCarId }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(appointmentData),
-      });
+      const { ok, data } = await createAppointment(appointmentData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (!ok) {
         console.error("Booking failed:", data);
         alert("Booking failed, check the console");
         return;

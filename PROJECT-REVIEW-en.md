@@ -57,9 +57,9 @@ The shell is nearly done; the core (auth + valuation + business rules) has barel
 
 | Location | Value |
 |---|---|
-| `frontend/src/api/userApi.js:3` | `http://localhost:3000/users` |
-| `frontend/src/apis/carApi.js:3` | `http://localhost:3000/cars` |
-| `frontend/.env:2` | `VITE_API_URL=http://localhost:4000` |
+| `frontend/src/api/userApi.js:3` | `http://localhost:4000/api/users` |
+| `frontend/src/apis/carApi.js:3` | `http://localhost:4000/api/cars` |
+| `frontend/.env:2` | `VITE_API_URL=http://localhost:4000/api` |
 | `backend/.env` | `PORT=4000`, while `backend/app.js:34` defaults to `3000` |
 
 **Consequences:**

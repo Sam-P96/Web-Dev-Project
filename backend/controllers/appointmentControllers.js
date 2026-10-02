@@ -18,7 +18,8 @@ const getAllAppointment = async (req, res) => {
 };
 
 const createNewAppointment = async (req, res) => {
-    const data = req.body
+    // Seller comes from the token, instead of req.body
+    const data = { ...req.body, seller: req.user._id }
     
     const newAppointment = await Appointment.addOne(data)
 
