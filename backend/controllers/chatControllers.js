@@ -1,3 +1,6 @@
+import { chat } from "../services/llm.js";
+import SYSTEM_PROMPT from "../prompts/systemPrompt.js";
+
 // Chat is stateless: the frontend sends the recent history with every request.
 // The backend re-checks the limits itself — never trust the client to trim history.
 const MAX_MESSAGES = 10;
@@ -33,15 +36,22 @@ const validateMessages = (messages) => {
 };
 
 // POST /api/chat
-// Phase 1: echoes the last message. Phase 2 replaces the echo with the LLM call.
 const sendChatMessage = async (req, res) => {
     const { messages } = req.body ?? {};
 
     const error = validateMessages(messages);
     if (error) return res.status(400).json({ error });
 
-    const lastMessage = messages.at(-1).content.trim();
-    res.json({ reply: `You said: ${lastMessage}` });
+    try {
+        // Rebuild each message: never forward extra fields from the client to the provider
+        const history = messages.map(({ role, content }) => ({ role, content: content.trim() }));
+        const reply = await chat({ system: SYSTEM_PROMPT, messages: history });
+        res.json({ reply });
+    } catch (err) {
+        // Provider problems (missing key, timeout, quota...) are logged, never shown to the user
+        console.error("LLM error:", err.message);
+        res.status(502).json({ error: "The assistant is unavailable right now. Please try again later." });
+    }
 };
 
 export { sendChatMessage, validateMessages };

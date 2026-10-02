@@ -1,4 +1,8 @@
 import { api } from "./helpers.js";
+import { chat } from "../services/llm.js";
+
+vi.mock("../services/llm.js");
+beforeEach(() => chat.mockResolvedValue("Mock reply"));
 
 // Own file on purpose: the limiter's counter lives in memory for the whole test file,
 // and Vitest reloads modules per file -> this file starts with a fresh counter.
