@@ -1,9 +1,13 @@
 import { api } from "./helpers.js";
 import { chat } from "../services/llm.js";
+import { search } from "../services/retriever.js";
+import { TOOLS } from "../services/chatTools.js";
 import SYSTEM_PROMPT from "../prompts/systemPrompt.js";
 
 // Never call the real LLM in tests (costs quota, flaky, no key in CI): every export becomes a vi.fn()
 vi.mock("../services/llm.js");
+// The knowledge base search is tested on its own in retriever.test.js
+vi.mock("../services/retriever.js");
 
 // No DB needed: /api/chat is stateless.
 // The rate limiter counts every request in this file (limit 20) -> keep it under 20 requests,
@@ -43,7 +47,37 @@ describe("POST /api/chat", () => {
         { role: "assistant", content: "answer" },
         { role: "user", content: "second" },
       ],
+      tools: TOOLS,
+      runTool: expect.any(Function),
     });
+  });
+
+  it("returns the FAQ sections found by search_knowledge_base as unique sources", async () => {
+    search.mockResolvedValue([
+      { section: "Fees", question: "Is it free?", text: "Fees > Is it free?\nYes." },
+      { section: "Selling your car", question: "How?", text: "Selling your car > How?\nSubmit it." },
+    ]);
+    // Fake LLM: searches twice (same sections), then answers
+    chat.mockImplementation(async ({ runTool }) => {
+      const first = await runTool("search_knowledge_base", { query: "fees" });
+      expect(first.results).toHaveLength(2);
+      await runTool("search_knowledge_base", { query: "selling fees" });
+      return "It is free.";
+    });
+
+    const res = await api.post("/api/chat").send({ messages: [user("Is it free?")] }).expect(200);
+    expect(res.body).toEqual({ reply: "It is free.", sources: ["Fees", "Selling your car"] });
+  });
+
+  it("leaves sources out when no tool found anything", async () => {
+    search.mockResolvedValue([]);
+    chat.mockImplementation(async ({ runTool }) => {
+      await runTool("search_knowledge_base", { query: "pizza" });
+      return "I don't know.";
+    });
+
+    const res = await api.post("/api/chat").send({ messages: [user("pizza?")] }).expect(200);
+    expect(res.body).toEqual({ reply: "I don't know." });
   });
 
   it("returns 502 { error } without leaking details when the LLM fails", async () => {

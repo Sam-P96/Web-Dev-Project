@@ -1,4 +1,5 @@
 import { chat } from "../services/llm.js";
+import { TOOLS, runTool } from "../services/chatTools.js";
 import SYSTEM_PROMPT from "../prompts/systemPrompt.js";
 
 // Chat is stateless: the frontend sends the recent history with every request.
@@ -45,8 +46,19 @@ const sendChatMessage = async (req, res) => {
     try {
         // Rebuild each message: never forward extra fields from the client to the provider
         const history = messages.map(({ role, content }) => ({ role, content: content.trim() }));
-        const reply = await chat({ system: SYSTEM_PROMPT, messages: history });
-        res.json({ reply });
+        // FAQ sections the answer was based on, shown under the reply by the frontend
+        const sources = new Set();
+        const reply = await chat({
+            system: SYSTEM_PROMPT,
+            messages: history,
+            tools: TOOLS,
+            runTool: async (name, args) => {
+                const result = await runTool(name, args);
+                result.sources.forEach((source) => sources.add(source));
+                return result.output;
+            },
+        });
+        res.json({ reply, ...(sources.size > 0 && { sources: [...sources] }) });
     } catch (err) {
         // Provider problems (missing key, timeout, quota...) are logged, never shown to the user
         console.error("LLM error:", err.message);

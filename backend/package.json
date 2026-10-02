@@ -9,7 +9,8 @@
     "test:watch": "cross-env NODE_ENV=test vitest",
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "ingest": "node scripts/ingest.js"
   },
   "keywords": [],
   "author": "",
