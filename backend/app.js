@@ -31,4 +31,17 @@ app.use("/api/cars", CarRouter);
 app.use("/api/offers", OfferRouter);
 app.use("/api/chat", chatRouter)
 
+// Express' defaults answer with an HTML page (and a stack trace in dev) -> keep the { error } shape everywhere
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// 4 arguments = error handler. Catches e.g. malformed JSON (400) and too large bodies (413)
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+  if (status >= 500) console.error(err);
+  // err.expose is set by body-parser for client errors whose message is safe to show
+  res.status(status).json({ error: status < 500 && err.expose ? err.message : "Internal server error" });
+});
+
 export default app;
