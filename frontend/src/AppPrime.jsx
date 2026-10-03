@@ -8,6 +8,7 @@ import SubmitCar from './pages/SubmitCar';
 import FindCarsPrime from './pages/FindCarsPrime';
 import CreateAccount from './pages/CreateAccount';
 import Navbar from './components/Navbar.jsx';
+import ChatWidget from './components/chat/ChatWidget.jsx';
 import BookingAppointment from './components/BookingAppointment.jsx';
 import WorkerOffers from './pages/WorkerOffers.jsx';
 import { RequireAuth, GuestOnly } from './components/RouteGuards.jsx';
@@ -18,6 +19,8 @@ function AppPrime() {
   return (
     <div>
       <Navbar />
+      {/* Outside <Routes>: shown on every page and keeps its state across navigation */}
+      <ChatWidget />
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePagePrime />} />
