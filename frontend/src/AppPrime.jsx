@@ -25,7 +25,8 @@ function AppPrime() {
         {/* Public */}
         <Route path="/" element={<HomePagePrime />} />
         <Route path="/find_cars" element={<FindCarsPrime />} />
-
+        <Route path="/register" element={<CreateAccount />} />
+        
         {/* Logged out only */}
         <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
         <Route path="/register" element={<GuestOnly><CreateAccount /></GuestOnly>} />
@@ -34,6 +35,7 @@ function AppPrime() {
         <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/submit_page" element={<RequireAuth><SubmitCar /></RequireAuth>} />
         <Route path="/appointment" element={<RequireAuth><BookingAppointment /></RequireAuth>} />
+        <Route path="/appointment/:carId" element={<RequireAuth><BookingAppointment /></RequireAuth>} />
 
         {/* Staff only (same roles as backend requireRole) */}
         <Route path="/employee_booking" element={<RequireAuth roles={STAFF}><WorkerAppointments /></RequireAuth>} />

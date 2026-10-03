@@ -1,60 +1,68 @@
-import React from 'react'
-
-const PriceEstimateDisplay = ({min = 23500, average = 25000, max = 26800}) => {
+import React from 'react';
 
 
-    const formatEuro = (val) =>
-    new Intl.NumberFormat('fi-FI', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0,
-    }).format(val);
+// Had claude help me with this, cus I wasnt sure how to make the UI for this. But its all basic stuff we all understand.
+const PriceEstimateDisplay = ({ estimate, loading, error, handlePostCar }) => {
 
+  if (loading) {
+    return (
+      <div className="mt-4 rounded-[7px] border border-[#d8dcd8] bg-[#f5f6f4] px-5 py-4">
+        <p className="text-sm text-[#777d78]">Estimating your car's value…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 rounded-[7px] border border-red-300 bg-red-50 px-5 py-4">
+        <p className="text-sm text-red-600">{error}</p>
+      </div>
+    );
+  }
+
+  if (!estimate) return null;
 
   return (
-
-   <div className=" rounded-[10px] border border-[#e3e6e2] bg-[#f9faf8] p-5 shadow-sm m-8">
-
-      <div className="flex items-center justify-between pb-3.5 border-b border-[#e8ebe8]">
-        <div>
-          <h3 className="mt-1.5 text-4 font-bold text-[#202522]">
-            Estimated Market Value
-          </h3>
-        </div>
-      </div>
-
-      {/* AVERAGE PRICE DISPLAY */}
-
-      <div className="py-4">
-        <p className="text-3 font-medium text-[#777d78]">Average Listing Price</p>
-        <div className="text-7.5 font-extrabold tracking-tight text-[#247f3d]">
-          {formatEuro(average)}
-        </div>
-      </div>
-
-
-      {/* ESTIMATED RANGE BAR */}
-
-      <div className="rounded-[8px] border border-[#e8ebe8] bg-white p-3.5">
-        <div className="mb-2 flex justify-between text-3 font-semibold text-[#303631]">
-          <span>Estimated Range </span>
-          <span className='flex justify-between'>{formatEuro(min)}  –  {formatEuro(max)}</span>
-        </div>
-
-
-
-        <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#e8ebe8]">
-          <div className="absolute left-[15%] right-[15%] h-full rounded-full bg-[#247f3d]" />
-        </div>
-      </div>
-
-
-
-      <p className="mt-3 ml-2.5 text-sm text-[#777d78] leading-normal">
-        Valuation is calculated based on market data for similar vehicles, condition, and mileage.
+    <div className="mt-4 rounded-[7px] border border-[#247f3d] bg-[#eef6f0] px-5 py-5">
+      <p className="text-3 font-extrabold tracking-[1.5px] text-[#2f9449]">
+        ESTIMATED VALUE
       </p>
-    </div>
-  )
-}
 
-export default PriceEstimateDisplay
+      <p className="mt-1 text-4xl font-bold text-[#1b6730]">
+        €{estimate.estimatedPrice.toLocaleString('fi-FI')}
+      </p>
+
+      {estimate.summary && (
+        <p className="mt-2 text-sm text-[#3a423c]">{estimate.summary}</p>
+      )}
+
+      <div className="mt-4 border-t border-[#c9e0d1] pt-4">
+        <p className="text-sm text-[#3a423c]">
+          If your car meets this claim —{' '}
+          <span className="font-semibold text-[#1b6730]">{estimate.claim}</span>{' '}
+          — we will offer at least{' '}
+          <span className="font-bold text-[#1b6730]">
+            €{estimate.minimumOffer.toLocaleString('fi-FI')}
+          </span>
+          .
+        </p>
+
+        <p className="mt-3 text-sm font-semibold text-[#303631]">
+          Would you like to book an appointment?
+        </p>
+
+        <button
+          // orignal placeholder, bring back if new function doesnt work. (just for the feeling) 
+          //href="https://www.google.com"
+          type="button"
+          className="mt-3 inline-block rounded-[7px] bg-[#247f3d] px-5.5 py-3.25 text-sm font-bold text-white transition duration-200 hover:bg-[#1b6730]"
+          onClick={handlePostCar}
+        >
+          Book an Appointment →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default PriceEstimateDisplay ;

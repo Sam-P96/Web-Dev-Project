@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import morgan from "morgan";
 // cors = cross origin resource sharing (browser security rule)
@@ -10,6 +11,7 @@ import AppointmentRouter from "./routes/appointmentRouter.js";
 import CarRouter from "./routes/carRouter.js";
 import OfferRouter from "./routes/offerRouter.js";
 import chatRouter from "./routes/chatRouter.js"
+import aiRouter from './routes/aiRouter.js'
 
 // app.js only builds the Express app (no DB connect, no listen)
 // so tests can import it with Supertest. Server start lives in index.js.
@@ -25,6 +27,7 @@ app.use(express.json());
 
 
 //ROUTES
+app.use('/api/ai', aiRouter);
 app.use("/api/users", userRouter);
 app.use("/api/appointments", AppointmentRouter);
 app.use("/api/cars", CarRouter);
