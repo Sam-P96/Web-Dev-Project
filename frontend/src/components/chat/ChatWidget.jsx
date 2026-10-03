@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ChatLauncher from './ChatLauncher.jsx';
 import ChatWindow from './ChatWindow.jsx';
-import { INITIAL_MESSAGES, MAX_HISTORY, WELCOME_MESSAGE_ID } from './chatConstants.js';
+import { INITIAL_MESSAGES, MAX_HISTORY, STORAGE_KEY, WELCOME_MESSAGE_ID } from './chatConstants.js';
 import { sendMessage } from '../../api/chatApi.js';
 
 // crypto.randomUUID() only exists on https/localhost, so use a simple counter instead
@@ -15,11 +15,30 @@ const toHistory = (messages) =>
     .slice(-MAX_HISTORY)
     .map(({ role, content }) => ({ role, content }));
 
+// Conversation is kept in sessionStorage so it survives a page reload (cleared when the tab closes).
+// Storage can be unavailable (private mode, blocked site data) -> fall back to a fresh chat.
+const loadMessages = () => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+    return Array.isArray(saved) && saved.length > 0 ? saved : INITIAL_MESSAGES;
+  } catch {
+    return INITIAL_MESSAGES;
+  }
+};
+
+const saveMessages = (messages) => {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  } catch {
+    // Not critical: the chat still works, it just won't survive a reload
+  }
+};
+
 // Owns the chat state; ChatLauncher/ChatWindow are presentational.
 // Mounted once in AppPrime (outside <Routes>) so the conversation survives page navigation.
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState(loadMessages);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasUnread, setHasUnread] = useState(false);
@@ -34,6 +53,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     messagesRef.current = messages;
+    saveMessages(messages);
   }, [messages]);
 
   const requestReply = useCallback(async (conversation) => {

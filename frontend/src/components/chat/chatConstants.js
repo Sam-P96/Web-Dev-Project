@@ -11,6 +11,9 @@ export const DEFAULT_QUICK_REPLIES = ['Find me a car', 'How does selling work?',
 // Rendered by the FE only — strip it before sending the history to the backend
 export const WELCOME_MESSAGE_ID = 'welcome';
 
+// sessionStorage key for the conversation (see ChatWidget)
+export const STORAGE_KEY = 'autotori-chat-messages';
+
 export const INITIAL_MESSAGES = [
   { id: WELCOME_MESSAGE_ID, role: 'assistant', content: 'How can I help you today?' },
 ];
