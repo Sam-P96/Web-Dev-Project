@@ -10,7 +10,8 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed": "node scripts/seed.js",
-    "ingest": "node scripts/ingest.js"
+    "ingest": "node scripts/ingest.js",
+    "eval": "node scripts/eval.js"
   },
   "keywords": [],
   "author": "",

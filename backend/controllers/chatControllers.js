@@ -36,6 +36,26 @@ const validateMessages = (messages) => {
     return null;
 };
 
+// The whole chatbot pipeline (LLM + tools), without HTTP: also used by `npm run eval`.
+// messages must already be validated. -> { reply, sources? }
+const getChatReply = async (messages) => {
+    // Rebuild each message: never forward extra fields from the client to the provider
+    const history = messages.map(({ role, content }) => ({ role, content: content.trim() }));
+    // FAQ sections the answer was based on, shown under the reply by the frontend
+    const sources = new Set();
+    const reply = await chat({
+        system: SYSTEM_PROMPT,
+        messages: history,
+        tools: TOOLS,
+        runTool: async (name, args) => {
+            const result = await runTool(name, args);
+            result.sources.forEach((source) => sources.add(source));
+            return result.output;
+        },
+    });
+    return { reply, ...(sources.size > 0 && { sources: [...sources] }) };
+};
+
 // POST /api/chat
 const sendChatMessage = async (req, res) => {
     const { messages } = req.body ?? {};
@@ -44,21 +64,7 @@ const sendChatMessage = async (req, res) => {
     if (error) return res.status(400).json({ error });
 
     try {
-        // Rebuild each message: never forward extra fields from the client to the provider
-        const history = messages.map(({ role, content }) => ({ role, content: content.trim() }));
-        // FAQ sections the answer was based on, shown under the reply by the frontend
-        const sources = new Set();
-        const reply = await chat({
-            system: SYSTEM_PROMPT,
-            messages: history,
-            tools: TOOLS,
-            runTool: async (name, args) => {
-                const result = await runTool(name, args);
-                result.sources.forEach((source) => sources.add(source));
-                return result.output;
-            },
-        });
-        res.json({ reply, ...(sources.size > 0 && { sources: [...sources] }) });
+        res.json(await getChatReply(messages));
     } catch (err) {
         // Provider problems (missing key, timeout, quota...) are logged, never shown to the user
         console.error("LLM error:", err.message);
@@ -66,4 +72,4 @@ const sendChatMessage = async (req, res) => {
     }
 };
 
-export { sendChatMessage, validateMessages };
+export { sendChatMessage, getChatReply, validateMessages };

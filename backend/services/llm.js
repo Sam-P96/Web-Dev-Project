@@ -107,4 +107,4 @@ const embed = async (texts, taskType) => {
   return vectors;
 };
 
-export { chat, embed, toContents, EMBED_MODEL };
+export { chat, embed, toContents, MODEL, EMBED_MODEL };
