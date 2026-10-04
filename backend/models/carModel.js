@@ -27,9 +27,11 @@ const carSchema = new mongoose.Schema({
   // MAYBE USELESS CRITERIA for data collection but useful for buyers?
   condition: { type: String, enum: ['poor', 'fair', 'good', 'excellent'], default: 'good' },
   description: { type: String },
-  // Does anyone know this?
-  // images: [????????????HELP???????????????]
-  // CHECK WEB_DEV_SCHOOL_NOTES file on Drive to figure out how to fix this
+  image: { type: String }, // so I added this image here (Aakash)
+  // "Asking Price" from CarForm. estimatedPrice stays the AI estimate
+  price: { type: Number, min: 0 },
+  // true = sent with handlePostCar in CarForm -> shows in WorkerOffers. false = normal listing -> shows in AvailableCars
+  company: { type: Boolean, default: false },
   estimatedPrice: { type: Number, default: null },
   isVerified: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' },
 });
@@ -80,6 +82,9 @@ const addOne = async (data) => {
       condition: data.condition,
       description: data.description,
       estimatedPrice: data.estimatedPrice,
+      image: data.image, // image added here as well
+      price: data.price,
+      company: data.company,
     });
     return newCar;
   } catch (err) {
@@ -123,4 +128,30 @@ const deleteById = async (id) => {
   return car ? true : false;
 };
 
-export { addOne, getAll, findById, updateById, deleteById };
+// Search for Ridhi's FindCarsPrime page. Every filter is optional: no filters = every listed car
+const search = async (filters) => {
+  // Same rule as AvailableCars: cars sold to the company are not public listings
+  const query = { company: { $ne: true } };
+
+  if (filters.make) query.make = filters.make;
+  if (filters.model) query.model = filters.model;
+
+  if (filters.minYear || filters.maxYear) {
+    query.year = {};
+    if (filters.minYear) query.year.$gte = Number(filters.minYear);
+    if (filters.maxYear) query.year.$lte = Number(filters.maxYear);
+  }
+
+  // Checks the asking price, or the AI estimate when a car has no asking price (like the seed cars)
+  // Same fallback as Duy's fix in AvailableCars: price ?? estimatedPrice
+  if (filters.minPrice || filters.maxPrice) {
+    const range = {};
+    if (filters.minPrice) range.$gte = Number(filters.minPrice);
+    if (filters.maxPrice) range.$lte = Number(filters.maxPrice);
+    query.$or = [{ price: range }, { price: null, estimatedPrice: range }];
+  }
+
+  return await Car.find(query);
+};
+
+export { addOne, getAll, findById, updateById, deleteById, search };

@@ -142,7 +142,7 @@ export const CarForm = () => {
       setGotEstimate(null);
       setEstimateError(null);
     } else {
-      setSubmitStatus({ type: 'error', text: result.data.message });
+      setSubmitStatus({ type: 'error', text: errorMessage(result.data) });
     }
   };
 
@@ -178,7 +178,7 @@ export const CarForm = () => {
     const result = await createCar(formData);
 
     if (!result.ok) {
-      setSubmitStatus({ type: 'error', text: result.data.message });
+      setSubmitStatus({ type: 'error', text: errorMessage(result.data) });
       return;
     }
 
@@ -429,9 +429,8 @@ export const CarForm = () => {
             // Recommended by claude when I was debugging
             submitStatus && (
               <p
-                className={`mb-4 text-sm font-semibold ${
-                  submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
-                }`}
+                className={`mb-4 text-sm font-semibold ${submitStatus.type === 'success' ? 'text-[#247f3d]' : 'text-red-500'
+                  }`}
               >
                 {submitStatus.text}
               </p>

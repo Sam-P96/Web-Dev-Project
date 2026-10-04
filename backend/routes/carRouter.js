@@ -5,8 +5,11 @@ import {
   findCarById,
   updateCarById,
   deleteCarById,
+  searchCars,
 } from '../controllers/carControllers.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+
+import upload from '../middleware/uploadMiddleware.js';
 
 const CarRouter = express.Router();
 //ROUTES
@@ -17,7 +20,11 @@ const CarRouter = express.Router();
 CarRouter.get('/', getAllCar);
 
 //POST /cars
-CarRouter.post('/', requireAuth, createNewCar);
+// requireAuth runs first, so a logged-out request never saves a file
+CarRouter.post('/', requireAuth, upload.single('carImage'), createNewCar); // route specific middleware
+
+//GET /cars/search?make=&model=&minPrice=&maxPrice=&minYear=&maxYear=  (must stay above /:carId, or "search" is treated as an id)
+CarRouter.get('/search', searchCars);
 
 //GET /cars/:carId
 CarRouter.get('/:carId', findCarById);
