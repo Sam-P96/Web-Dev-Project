@@ -7,10 +7,13 @@ const getAllCar = async (req, res) => {
 };
 
 const createNewCar = async (req, res) => {
+    const image = req.file ? `/uploads/cars/${req.file.filename}` : undefined; //because image comes from file = tested from the console.log below
     // Owner comes from the token, never from req.body (can't create cars for someone else)
-    const data = { ...req.body, client: req.user._id }
-    
+    const data = { ...req.body, image, client: req.user._id }
+
     const newCar = await Car.addOne(data)
+    //   console.log('BODY:', req.body);
+    //   console.log('FILE:', req.file);
 
     if (newCar.error) {
         res.status(400).json({ error: newCar.error });
@@ -49,14 +52,21 @@ const deleteCarById = async (req, res) => {
     else {
         const isDeleted = await Car.deleteById(carId);
         if (isDeleted) res.status(200).json({message: "Delete car successfully"})
-        else res.status(500).json({ error: "Delete failed"}); 
+        else res.status(500).json({ error: "Delete failed"});
     }
 }
+
+// For Ridhi's search page. Filters come from the URL (?make=Audi&maxPrice=25000...), empty ones are skipped
+const searchCars = async (req, res) => {
+    const results = await Car.search(req.query)
+    res.json(results);
+};
 
 export {
   getAllCar,
   createNewCar,
   findCarById,
   updateCarById,
-  deleteCarById
+  deleteCarById,
+  searchCars
 };

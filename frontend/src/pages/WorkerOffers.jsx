@@ -81,10 +81,10 @@ export default function WorkerOffers() {
     console.log(updateStatus);
     setOffers((prevOffers) =>
       prevOffers.map((offer) =>
-        offer.id === id ? { ...offer, status: updateCar.isVerified } : offer,
+        offer.id === id ? { ...offer, status: updateStatus.isVerified } : offer,
       ),
     );
-    setSelectedOffer((prev) => ({ ...prev, status: updateCar.isVerified }));
+    setSelectedOffer((prev) => ({ ...prev, status: updateStatus.isVerified }));
   };
 
   const filteredOffers = offers.filter((offer) => {

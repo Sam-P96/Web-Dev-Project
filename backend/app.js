@@ -3,6 +3,7 @@ import express from "express";
 import morgan from "morgan";
 // cors = cross origin resource sharing (browser security rule)
 import cors from "cors";
+import path from 'path';
 
 
 //ROUTERS
@@ -25,6 +26,7 @@ app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'))); //route specific middleware
 
 //ROUTES
 app.use('/api/ai', aiRouter);
