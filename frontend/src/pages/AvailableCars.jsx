@@ -16,10 +16,10 @@ const AvailableCars = () => {
           .map((car) => ({
             id: car._id,
             carName: `${car.make} ${car.model}`,
-            mileage: `${car.mileage.toLocaleString()} km`,
+            mileage: car.mileage != null ? `${car.mileage.toLocaleString()} km` : 'N/A',
             location: car.location,
             sellerName: car.seller,
-            price: car.price,
+            price: car.price ?? car.estimatedPrice ,
             status: car.isVerified,
             image: car.image,
             year: car.year,
@@ -45,7 +45,7 @@ const AvailableCars = () => {
           year={item.year}
           km={item.mileage}
           location={item.location}
-          price={`€${item.price.toLocaleString()}`}
+          price={`${item.price?.toLocaleString() ?? "N/A"}`}
         />
       ))}
     </div>
