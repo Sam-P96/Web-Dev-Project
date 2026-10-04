@@ -57,9 +57,9 @@ Phần "vỏ" gần xong, phần "ruột" (auth + định giá + ràng buộc ng
 
 | Vị trí | Nội dung |
 |---|---|
-| `frontend/src/api/userApi.js:3` | `http://localhost:3000/users` |
-| `frontend/src/apis/carApi.js:3` | `http://localhost:3000/cars` |
-| `frontend/.env:2` | `VITE_API_URL=http://localhost:4000` |
+| `frontend/src/api/userApi.js:3` | `http://localhost:4000/api/users` |
+| `frontend/src/apis/carApi.js:3` | `http://localhost:4000/api/cars` |
+| `frontend/.env:2` | `VITE_API_URL=http://localhost:4000/api` |
 | `backend/.env` | `PORT=4000`, còn `backend/app.js:34` default `3000` |
 
 **Hệ quả:**

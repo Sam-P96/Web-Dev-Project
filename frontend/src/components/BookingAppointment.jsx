@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import { createAppointment } from "../api/appointmentApi";
 
 const BookingAppointment = ({ importSeller, importCarId }) => {
   //we can take the slots as the props, then filter this availableSlots=availableSlots.filter
@@ -26,7 +27,7 @@ const BookingAppointment = ({ importSeller, importCarId }) => {
   const [seller, setSeller] = useState("6aba7e356af774660cbf46ff");
   // for worker, lets fetch the worker with the least numnber of appointments then automatically assign
   // this might throw an error, I mightve planned for this to be an ID, this is a placeholder for now.
-  const [worker, setWorker] = useState("6aba7e356af774660cbf46ff");
+  const [worker, setWorker] = useState("6abf9d5c7ce2da5a4c066321");
   const [scheduledAt, setScheduledAt] = useState(null);
   const [location, setLocation] = useState("Helsinki");
   const [notes, setNotes] = useState("No Notes");
@@ -63,17 +64,9 @@ const BookingAppointment = ({ importSeller, importCarId }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(appointmentData),
-      });
+      const { ok, data } = await createAppointment(appointmentData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (!ok) {
         console.error("Booking failed:", data);
         alert("Booking failed, check the console");
         return;
