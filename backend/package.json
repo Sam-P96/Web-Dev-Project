@@ -8,17 +8,21 @@
     "test": "cross-env NODE_ENV=test vitest run",
     "test:watch": "cross-env NODE_ENV=test vitest",
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "seed": "node scripts/seed.js",
+    "ingest": "node scripts/ingest.js",
+    "eval": "node scripts/eval.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^2.26.0",
     "bcryptjs": "^3.0.3",
-    "@google/genai": "^2.24.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.5",
     "morgan": "^1.12.0"
