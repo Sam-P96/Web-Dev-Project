@@ -52,5 +52,28 @@ export async function apiFetch(path, { body, headers, ...options } = {}) {
 }
 
 // Backend error responses are always { error: "..." }
-export const errorMessage = (data, fallback = 'Something went wrong') =>
-  data?.error ?? fallback;
+export const errorMessage = (data, fallback = 'Something went wrong') => data?.error ?? fallback;
+
+// this is new addition because the carform data isnt json data, its a file data because it has image now
+
+export async function apiFetchFormData(path, formData) {
+  const user = getStoredUser();
+
+  const res = await fetch(`${API}${path}`, {
+    method: 'POST',
+    headers: {
+      ...(user?.token && {
+        Authorization: `Bearer ${user.token}`,
+      }),
+    },
+    body: formData,
+  });
+
+  const data = await res.json().catch(() => null);
+
+  return {
+    ok: res.ok,
+    status: res.status,
+    data,
+  };
+}

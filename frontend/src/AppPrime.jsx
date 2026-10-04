@@ -12,6 +12,8 @@ import ChatWidget from './components/chat/ChatWidget.jsx';
 import BookingAppointment from './components/BookingAppointment.jsx';
 import WorkerOffers from './pages/WorkerOffers.jsx';
 import { RequireAuth, GuestOnly } from './components/RouteGuards.jsx';
+import AvailableCars from './pages/AvailableCars.jsx';
+import SalePage from './components/SalePage.jsx';
 
 const STAFF = ['worker', 'admin'];
 
@@ -26,20 +28,79 @@ function AppPrime() {
         <Route path="/" element={<HomePagePrime />} />
         <Route path="/find_cars" element={<FindCarsPrime />} />
         <Route path="/register" element={<CreateAccount />} />
-        
+        <Route path="/offer" element={<WorkerOffers />} />
+        <Route path="/available-cars" element={<AvailableCars />} />
+        <Route path="/sale-page/:carId" element={<SalePage />} />
+
         {/* Logged out only */}
-        <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
-        <Route path="/register" element={<GuestOnly><CreateAccount /></GuestOnly>} />
+        <Route
+          path="/login"
+          element={
+            <GuestOnly>
+              <Login />
+            </GuestOnly>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestOnly>
+              <CreateAccount />
+            </GuestOnly>
+          }
+        />
 
         {/* Any logged-in user */}
-        <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/submit_page" element={<RequireAuth><SubmitCar /></RequireAuth>} />
-        <Route path="/appointment" element={<RequireAuth><BookingAppointment /></RequireAuth>} />
-        <Route path="/appointment/:carId" element={<RequireAuth><BookingAppointment /></RequireAuth>} />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <UserProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/submit_page"
+          element={
+            <RequireAuth>
+              <SubmitCar />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/appointment"
+          element={
+            <RequireAuth>
+              <BookingAppointment />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/appointment/:carId"
+          element={
+            <RequireAuth>
+              <BookingAppointment />
+            </RequireAuth>
+          }
+        />
 
         {/* Staff only (same roles as backend requireRole) */}
-        <Route path="/employee_booking" element={<RequireAuth roles={STAFF}><WorkerAppointments /></RequireAuth>} />
-        <Route path="/offers" element={<RequireAuth roles={STAFF}><WorkerOffers /></RequireAuth>} />
+        <Route
+          path="/employee_booking"
+          element={
+            <RequireAuth roles={STAFF}>
+              <WorkerAppointments />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/offers"
+          element={
+            <RequireAuth roles={STAFF}>
+              <WorkerOffers />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </div>
   );
