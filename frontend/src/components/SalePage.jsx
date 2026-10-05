@@ -50,7 +50,7 @@ const SalePage = () => {
               <p className="text-xl font-extrabold tracking-tight text-[#138f44] transition duration-200 group-hover:text-[#1f7a38]">{`${car.make} ${car.model}`}</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-extrabold text-[#1f7a38]"> {car.price}€</p>
+              <p className="text-2xl font-extrabold text-[#1f7a38]"> {car.price} €</p>
               <p className="text-sm text-[#238636]">Monthly Klarna Pay</p>
             </div>
           </div>
