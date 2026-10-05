@@ -56,6 +56,24 @@ const deleteCarById = async (req, res) => {
     }
 }
 
+const deleteCarById2 = async (req, res) => {
+    const carId = req.params.carId;
+    const car = await Car.findById(carId);
+
+    if (!car) res.status(404).json({ error: "Car not found"})
+
+    // only the owner (or admin) can delete the car
+    else if (req.user.role !== "admin" && car.client?._id.toString() !== req.user._id.toString()) {
+        res.status(403).json({ error: "Forbidden" })
+    }
+
+    else {
+        const isDeleted = await Car.deleteById(carId);
+        if (isDeleted) res.status(200).json({message: "Delete car successfully"})
+        else res.status(500).json({ error: "Delete failed"});
+    }
+}
+
 // For Ridhi's search page. Filters come from the URL (?make=Audi&maxPrice=25000...), empty ones are skipped
 const searchCars = async (req, res) => {
     const results = await Car.search(req.query)
@@ -68,5 +86,6 @@ export {
   findCarById,
   updateCarById,
   deleteCarById,
+  deleteCarById2,
   searchCars
 };

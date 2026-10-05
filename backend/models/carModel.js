@@ -99,7 +99,7 @@ const addOne = async (data) => {
 const findById = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-  const car = await Car.findById(id);
+  const car = await Car.findById(id).populate('client', 'name email phone address');
   return car ?? false;
 };
 

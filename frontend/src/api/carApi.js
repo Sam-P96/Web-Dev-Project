@@ -36,6 +36,11 @@ export const getCarById = async (id) => {
   return data;
 };
 
+export const deleteCar = async (id) => {
+  const { ok, data } = await apiFetch(`/cars/list/${id}`, { method: 'DELETE' });
+  return { ok, data };
+};
+
 // Ridhi's search (GET /cars/search is public)
 export async function searchCars(filters) {
   const params = new URLSearchParams();

@@ -9,13 +9,13 @@ import { getMongoUri } from "../db.js";
 import "../models/userModel.js";
 import "../models/carModel.js";
 
-/* Seeds the dev database with sample users and cars (for the chatbot and the Find Cars page).
+/* Seeds the dev database with sample cars (for the chatbot and the Find Cars page).
 
 Usage (from backend/):
-    npm run seed           -> (re)create the seed users + their cars
-    npm run seed -- --clean -> only remove the seed users + their cars
+    npm run seed           -> (re)create the seed user + its cars
+    npm run seed -- --clean -> only remove the seed user + its cars
 
-Safe to run many times: it only ever touches the seed users and cars owned by them.
+Safe to run many times: it only ever touches the seed user and cars owned by that user.
 Real users and their cars are never modified.
 Seed images are copied into uploads/ with a "seed-" prefix so --clean can remove them.
 */
@@ -23,19 +23,8 @@ Seed images are copied into uploads/ with a "seed-" prefix so --clean can remove
 const User = mongoose.model("User");
 const Car = mongoose.model("Car");
 
-// Same password for every seed user, so they're easy to log in as
+const SEED_EMAIL = "seed-client@autotori.test";
 const SEED_PASSWORD = "seedpassword123";
-
-// Fields match userSchema in models/userModel.js
-const SEED_USERS = [
-  { name: "Robert", email: "robert@autotori.test", phone: "+358 40 123 4567", address: "Mannerheimintie 10, Helsinki", age: 45, role: "client" },
-  { name: "Bobby", email: "bobby@autotori.test", phone: "+358 50 234 5678", address: "Tapiontori 3, Espoo", age: 29, role: "client" },
-  { name: "Todeius", email: "todeius@autotori.test", phone: "+358 44 345 6789", address: "Hämeenkatu 25, Tampere", age: 36, role: "client" },
-];
-
-// Old seed user from earlier versions of this script; still removed by clean()
-const LEGACY_SEED_EMAILS = ["seed-client@autotori.test"];
-const ALL_SEED_EMAILS = [...SEED_USERS.map((user) => user.email), ...LEGACY_SEED_EMAILS];
 
 // Paths (this file is backend/scripts/seed.js)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -111,46 +100,36 @@ const cleanSeedImages = async () => {
   }
 };
 
-// Removes all seed users (current + legacy) and every car they own
 const clean = async () => {
   await cleanSeedImages();
-  const users = await User.find({ email: { $in: ALL_SEED_EMAILS } });
-  if (users.length === 0) return { users: 0, cars: 0 };
-  const userIds = users.map((user) => user._id);
-  const { deletedCount } = await Car.deleteMany({ client: { $in: userIds } });
-  await User.deleteMany({ _id: { $in: userIds } });
-  return { users: users.length, cars: deletedCount };
+  const user = await User.findOne({ email: SEED_EMAIL });
+  if (!user) return 0;
+  const { deletedCount } = await Car.deleteMany({ client: user._id });
+  await User.deleteOne({ _id: user._id });
+  return deletedCount;
 };
 
 const seed = async () => {
   const removed = await clean();
 
-  // 1. Create the users (all share the same hashed password)
   const password = await bcrypt.hash(SEED_PASSWORD, 10);
-  const users = await User.insertMany(SEED_USERS.map((user) => ({ ...user, password })));
+  const user = await User.create({ name: "Seed Client", email: SEED_EMAIL, password, role: "client" });
 
-  // 2. Copy images
   const imageLookup = await copySeedImages();
 
-  // 3. Build cars: owner rotates Robert -> Bobby -> Todeius -> Robert ...
+  // Matching image if the car has one, otherwise cycle through CAR_IMAGES
   let nextImage = 0;
-  const carDocs = SEED_CARS.map(({ imageFile, ...car }, index) => {
-    const owner = users[index % users.length];
+  const carDocs = SEED_CARS.map(({ imageFile, ...car }) => {
     const file = imageFile ?? CAR_IMAGES[nextImage++ % CAR_IMAGES.length];
-    return { ...car, image: imageLookup[file], client: owner._id };
+    return { ...car, image: imageLookup[file], client: user._id };
   });
 
   // insertMany instead of carModel.addOne(): addOne ignores isVerified
   const cars = await Car.insertMany(carDocs);
 
-  // 4. Summary
   const accepted = cars.filter((car) => car.isVerified === "Accepted").length;
-  console.log(`Removed ${removed.users} old seed users and ${removed.cars} old seed cars.`);
-  console.log(`Inserted ${users.length} users and ${cars.length} cars (${accepted} Accepted, all with images).`);
-  for (const user of users) {
-    const owned = cars.filter((car) => car.client.equals(user._id)).length;
-    console.log(`  ${user.name.padEnd(8)} ${user.email.padEnd(24)} ${owned} cars   password: ${SEED_PASSWORD}`);
-  }
+  console.log(`Removed ${removed} old seed cars.`);
+  console.log(`Inserted ${cars.length} cars (${accepted} Accepted, all with images) owned by ${SEED_EMAIL} / ${SEED_PASSWORD}`);
 };
 
 const uri = getMongoUri();
@@ -165,7 +144,7 @@ try {
 
   if (process.argv.includes("--clean")) {
     const removed = await clean();
-    console.log(`Removed ${removed.users} seed users and ${removed.cars} seed cars.`);
+    console.log(`Removed seed user and ${removed} seed cars.`);
   } else {
     await seed();
   }
