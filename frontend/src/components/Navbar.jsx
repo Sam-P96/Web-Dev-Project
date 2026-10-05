@@ -8,11 +8,13 @@ const STAFF = ['worker', 'admin'];
 // show(user) decides visibility — keep it in sync with the guards in AppPrime.jsx
 const NAV_LINKS = [
   { to: '/', label: 'Home', show: () => true },
+  { to: '/find_cars', label: 'Browse Cars', show: () => true },
+  { to: '/submit_page', label: 'Sell Cars', show: () => true },
   { to: '/register', label: 'Create Account', show: (user) => !user },
   { to: '/employee_booking', label: 'Booking', show: (user) => STAFF.includes(user?.role) },
   { to: '/profile', label: 'Profile', show: (user) => !!user },
-  { to: '/appointment', label: 'Appointments', show: (user) => !!user },
-  { to: '/offers', label: 'Offers', show: (user) => STAFF.includes(user?.role) },
+  // { to: '/appointment', label: 'Appointments', show: (user) => !!user },
+  // { to: '/offers', label: 'Offers', show: (user) => STAFF.includes(user?.role) },
 ];
 
 const Navbar = () => {
