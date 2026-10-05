@@ -38,7 +38,7 @@ function FindCarsPrime() {
                                 year={car.year}
                                 km={car.mileage}
                                 location={car.location}
-                                price={(car.price ?? car.estimatedPrice) != null ? `€${(car.price ?? car.estimatedPrice).toLocaleString()}` : "Price on request"}
+                                price={(car.price ?? car.estimatedPrice) != null ? `${(car.price ?? car.estimatedPrice).toLocaleString()}` : "Price on request"}
                             />
                         ))} */}
                         {cars.map((car) => (
@@ -52,7 +52,7 @@ function FindCarsPrime() {
                                 km={car.mileage}
                                 location={car.location}
                                 // price={`${car.price?.toLocaleString() ?? "N/A"}`
-                                price={(car.price ?? car.estimatedPrice) != null ? `€${(car.price ?? car.estimatedPrice).toLocaleString()}` : "Price on request"}
+                                price={(car.price ?? car.estimatedPrice) != null ? `${(car.price ?? car.estimatedPrice).toLocaleString()}€` : "Price on request"}
                             />
                         ))}
                     </div>

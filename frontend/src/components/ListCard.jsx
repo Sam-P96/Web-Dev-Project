@@ -11,7 +11,7 @@ function ListCard({ id, image, name, year, km, location, price }) {
         <h3 className="text-lg font-bold text-[#202522]">{name}</h3>
         <span className="text-sm text-[#777d78]">{location}</span>
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#e8ebe8]">
-          <strong className="text-xl font-extrabold text-[#1f7a38]"> € {price}</strong>
+          <strong className="text-xl font-extrabold text-[#1f7a38]"> {price}</strong>
           <Link
             to={`/sale-page/${id}`}
             className="text-sm font-bold text-[#202522] transition duration-200 hover:text-[#238636]"
