@@ -5,6 +5,7 @@ import {
   findCarById,
   updateCarById,
   deleteCarById,
+  deleteCarById2,
   searchCars,
 } from '../controllers/carControllers.js';
 import { requireAuth } from '../middleware/requireAuth.js';
@@ -34,5 +35,8 @@ CarRouter.put('/:carId', requireAuth, updateCarById);
 
 //DELETE /cars/:carId
 CarRouter.delete('/:carId', requireAuth, deleteCarById);
+
+//DELETE /cars/:carId  (only the owner or admin)
+CarRouter.delete('/list/:carId', requireAuth, deleteCarById2);
 
 export default CarRouter;
