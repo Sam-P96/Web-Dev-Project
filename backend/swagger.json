@@ -1,0 +1,829 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Car Offers API",
+    "description": "Backend for the car listing / offers app: users, cars, offers, appointments and AI price estimate.",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api", "description": "Current host (all routes are mounted under /api)" }],
+  "tags": [
+    { "name": "Users" },
+    { "name": "Cars" },
+    { "name": "Offers" },
+    { "name": "Appointments" },
+    { "name": "AI" }
+  ],
+  "paths": {
+    "/users/signup": {
+      "post": {
+        "summary": "Register a new user (role is always client)",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SignupInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "summary": "Log in and get a JWT",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/LoginInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "summary": "Get the currently logged-in user",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List all users (worker or admin only)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "summary": "Get a user by ID (self or admin)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/UserId" }],
+        "responses": {
+          "200": {
+            "description": "User found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "summary": "Update a user (self or admin)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/UserId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UserUpdateInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user (self or admin)",
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/UserId" }],
+        "responses": {
+          "200": {
+            "description": "User deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" },
+                "example": { "message": "Delete user successfully" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/cars": {
+      "get": {
+        "summary": "List all cars (public)",
+        "tags": ["Cars"],
+        "responses": {
+          "200": {
+            "description": "List of cars (owner populated, password excluded)",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Car" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a car listing with an optional image",
+        "description": "Owner (client) is taken from the token, never from the body. Send as multipart/form-data; the image file field is named carImage.",
+        "tags": ["Cars"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": { "schema": { "$ref": "#/components/schemas/CarCreateInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Car created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Car" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/cars/{carId}": {
+      "get": {
+        "summary": "Get a car by ID (public)",
+        "tags": ["Cars"],
+        "parameters": [{ "$ref": "#/components/parameters/CarId" }],
+        "responses": {
+          "200": {
+            "description": "Car found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Car" } } }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "summary": "Update a car (JSON body, no image upload)",
+        "tags": ["Cars"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/CarId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CarUpdateInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Car updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Car" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a car",
+        "tags": ["Cars"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/CarId" }],
+        "responses": {
+          "200": {
+            "description": "Car deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" },
+                "example": { "message": "Delete car successfully" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/offers": {
+      "get": {
+        "summary": "List all offers (worker or admin only)",
+        "tags": ["Offers"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of offers",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Offer" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Create an offer for a car (worker or admin only)",
+        "tags": ["Offers"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/OfferInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Offer created",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Offer" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/offers/{offerId}": {
+      "get": {
+        "summary": "Get an offer by ID (worker or admin only)",
+        "tags": ["Offers"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/OfferId" }],
+        "responses": {
+          "200": {
+            "description": "Offer found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Offer" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "summary": "Update an offer (worker or admin only)",
+        "tags": ["Offers"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/OfferId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/OfferUpdateInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Offer updated",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Offer" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an offer (worker or admin only)",
+        "tags": ["Offers"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/OfferId" }],
+        "responses": {
+          "200": {
+            "description": "Offer deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" },
+                "example": { "message": "Delete offer successfully" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/appointments": {
+      "get": {
+        "summary": "List appointments, optionally filtered by worker",
+        "description": "In this list car and seller are populated (car: make, model, year; seller: name). Sorted by scheduledAt ascending.",
+        "tags": ["Appointments"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "worker",
+            "in": "query",
+            "required": false,
+            "description": "Only return appointments assigned to this worker (ObjectId)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of appointments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Appointment" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "summary": "Book an appointment",
+        "tags": ["Appointments"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AppointmentInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Appointment created",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/appointments/{appointmentId}": {
+      "get": {
+        "summary": "Get an appointment by ID",
+        "tags": ["Appointments"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/AppointmentId" }],
+        "responses": {
+          "200": {
+            "description": "Appointment found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "summary": "Update an appointment",
+        "tags": ["Appointments"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/AppointmentId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AppointmentUpdateInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment updated",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an appointment",
+        "tags": ["Appointments"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/AppointmentId" }],
+        "responses": {
+          "200": {
+            "description": "Appointment deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" },
+                "example": { "message": "Delete appointment successfully" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/ai/estimate-price": {
+      "post": {
+        "summary": "Get an AI price estimate for a car (public)",
+        "description": "Calls Gemini and returns the parsed JSON estimate.",
+        "tags": ["AI"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/EstimateInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estimate",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/EstimateResult" } }
+            }
+          },
+          "400": {
+            "description": "A required car detail is missing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageOnlyError" },
+                "example": { "message": "All car details are required." }
+              }
+            }
+          },
+          "502": {
+            "description": "The AI response could not be parsed; try again",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageOnlyError" },
+                "example": { "message": "Could not read the AI response. Please try again." }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+
+    "parameters": {
+      "UserId": {
+        "name": "userId",
+        "in": "path",
+        "required": true,
+        "description": "MongoDB ObjectId of the user",
+        "schema": { "type": "string" }
+      },
+      "CarId": {
+        "name": "carId",
+        "in": "path",
+        "required": true,
+        "description": "MongoDB ObjectId of the car",
+        "schema": { "type": "string" }
+      },
+      "OfferId": {
+        "name": "offerId",
+        "in": "path",
+        "required": true,
+        "description": "MongoDB ObjectId of the offer",
+        "schema": { "type": "string" }
+      },
+      "AppointmentId": {
+        "name": "appointmentId",
+        "in": "path",
+        "required": true,
+        "description": "MongoDB ObjectId of the appointment",
+        "schema": { "type": "string" }
+      }
+    },
+
+    "responses": {
+      "BadRequest": {
+        "description": "Missing fields or invalid data",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid token",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "Forbidden": {
+        "description": "Logged in but not allowed",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "ServerError": {
+        "description": "Server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    },
+
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": { "error": { "type": "string" } }
+      },
+      "MessageOnlyError": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } }
+      },
+
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "age": { "type": "number" },
+          "role": { "type": "string", "enum": ["client", "worker", "admin"] },
+          "browsingHistory": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SignupInput": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string", "example": "Mon" },
+          "email": { "type": "string", "format": "email", "example": "email@example.com" },
+          "password": { "type": "string", "example": "password123" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "age": { "type": "number" }
+        }
+      },
+      "LoginInput": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "email@example.com" },
+          "password": { "type": "string", "example": "password123" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "email": { "type": "string" },
+          "name": { "type": "string" },
+          "role": { "type": "string", "enum": ["client", "worker", "admin"] },
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+        }
+      },
+      "UserUpdateInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "age": { "type": "number" }
+        }
+      },
+
+      "Car": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "client": {
+            "description": "Owner (populated User, password excluded)",
+            "allOf": [{ "$ref": "#/components/schemas/User" }]
+          },
+          "make": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "number" },
+          "mileage": { "type": "number", "description": "in km" },
+          "fuel": { "type": "string" },
+          "transmission": { "type": "string" },
+          "location": { "type": "string" },
+          "condition": { "type": "string", "enum": ["poor", "fair", "good", "excellent"] },
+          "description": { "type": "string" },
+          "image": { "type": "string", "example": "/uploads/cars/uuid.jpg" },
+          "estimatedPrice": { "type": "number", "nullable": true, "description": "in EUR" },
+          "company": { "type": "boolean" },
+          "price": { "type": "number", "description": "Seller's asking price" },
+          "isVerified": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] }
+        }
+      },
+      "CarCreateInput": {
+        "type": "object",
+        "required": ["make", "model", "year", "mileage", "price"],
+        "properties": {
+          "carImage": { "type": "string", "format": "binary", "description": "Image file" },
+          "make": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "number" },
+          "mileage": { "type": "number", "description": "in km" },
+          "price": { "type": "number", "description": "Seller's asking price" },
+          "fuel": { "type": "string" },
+          "transmission": { "type": "string" },
+          "location": { "type": "string" },
+          "condition": { "type": "string", "enum": ["poor", "fair", "good", "excellent"] },
+          "description": { "type": "string" },
+          "company": { "type": "boolean" },
+          "estimatedPrice": { "type": "number" }
+        }
+      },
+      "CarUpdateInput": {
+        "type": "object",
+        "properties": {
+          "make": { "type": "string" },
+          "model": { "type": "string" },
+          "year": { "type": "number" },
+          "mileage": { "type": "number" },
+          "fuel": { "type": "string" },
+          "transmission": { "type": "string" },
+          "location": { "type": "string" },
+          "condition": { "type": "string", "enum": ["poor", "fair", "good", "excellent"] },
+          "price": { "type": "number" },
+          "description": { "type": "string" },
+          "estimatedPrice": { "type": "number" },
+          "isVerified": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] }
+        }
+      },
+
+      "Offer": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "car": { "type": "string" },
+          "worker": { "type": "string" },
+          "amount": { "type": "number" },
+          "message": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] },
+          "respondedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "OfferInput": {
+        "type": "object",
+        "required": ["car", "worker", "amount", "message"],
+        "properties": {
+          "car": { "type": "string", "description": "Car ObjectId" },
+          "worker": { "type": "string", "description": "Worker (User) ObjectId" },
+          "amount": { "type": "number", "minimum": 0 },
+          "message": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "accepted", "rejected"],
+            "default": "pending"
+          },
+          "respondedAt": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "OfferUpdateInput": {
+        "type": "object",
+        "properties": {
+          "worker": { "type": "string" },
+          "amount": { "type": "number", "minimum": 0 },
+          "message": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] }
+        }
+      },
+
+      "Appointment": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "car": {
+            "description": "Car ObjectId (populated with make, model, year in the list endpoint)",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "make": { "type": "string" },
+                  "model": { "type": "string" },
+                  "year": { "type": "number" }
+                }
+              }
+            ]
+          },
+          "seller": {
+            "description": "Seller (User) ObjectId (populated with name in the list endpoint)",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              }
+            ]
+          },
+          "worker": { "type": "string", "nullable": true },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "location": { "type": "string" },
+          "notes": { "type": "string" },
+          "status": { "type": "string", "enum": ["booked", "confirmed", "completed", "cancelled"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AppointmentInput": {
+        "type": "object",
+        "required": ["car", "seller", "scheduledAt"],
+        "properties": {
+          "car": { "type": "string", "description": "Car ObjectId" },
+          "seller": { "type": "string", "description": "Seller (User) ObjectId" },
+          "worker": { "type": "string", "nullable": true },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "location": { "type": "string" },
+          "notes": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["booked", "confirmed", "completed", "cancelled"],
+            "default": "booked"
+          }
+        }
+      },
+      "AppointmentUpdateInput": {
+        "type": "object",
+        "properties": {
+          "worker": { "type": "string", "nullable": true },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "location": { "type": "string" },
+          "notes": { "type": "string" },
+          "status": { "type": "string", "enum": ["booked", "confirmed", "completed", "cancelled"] }
+        }
+      },
+
+      "EstimateInput": {
+        "type": "object",
+        "required": ["make", "model", "year", "mileage", "fuel", "transmission", "condition"],
+        "properties": {
+          "make": { "type": "string", "example": "Toyota" },
+          "model": { "type": "string", "example": "Corolla" },
+          "year": { "type": "number", "example": 2018 },
+          "mileage": { "type": "number", "example": 120000 },
+          "fuel": { "type": "string", "example": "Petrol" },
+          "transmission": { "type": "string", "example": "Manual" },
+          "condition": { "type": "string", "example": "good" },
+          "location": { "type": "string", "example": "Helsinki" },
+          "description": { "type": "string" }
+        }
+      },
+      "EstimateResult": {
+        "type": "object",
+        "properties": {
+          "estimatedPrice": { "type": "number" },
+          "minimumOffer": { "type": "number" },
+          "claim": { "type": "string" },
+          "summary": { "type": "string" }
+        }
+      }
+    }
+  }
+}
